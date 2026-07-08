@@ -30,6 +30,30 @@ export default function IntakeForm() {
       setError('Something went wrong. Please try again.')
       setSaving(false)
     } else {
+      // Send email notification to trainers (silent fail — DB save already succeeded)
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key:  import.meta.env.VITE_WEB3FORMS_KEY,
+          subject:     `New intake: ${form.child_name}`,
+          from_name:   'CourtFlow Intake Form',
+          message: [
+            `Child: ${form.child_name}`,
+            `Age: ${form.age || '—'}  |  Grade: ${form.grade || '—'}`,
+            `School: ${form.school || '—'}  |  Team: ${form.team || '—'}`,
+            `Skill level: ${form.skill_level || '—'}`,
+            ``,
+            `Goals: ${form.goals || '—'}`,
+            `Strengths: ${form.strengths || '—'}`,
+            `Improve: ${form.weaknesses || '—'}`,
+            ``,
+            `Parent: ${form.parent_name}`,
+            `Phone: ${form.parent_phone || '—'}`,
+            `Email: ${form.parent_email || '—'}`,
+          ].join('\n'),
+        }),
+      }).catch(() => {})
       setSubmitted(true)
     }
   }
