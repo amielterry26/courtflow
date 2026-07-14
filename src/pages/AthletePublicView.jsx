@@ -198,10 +198,10 @@ export default function AthletePublicView() {
                       {s.start_time && (
                         <div className="pt-2 flex gap-2">
                           <button
-                            onClick={() => downloadICS(s, athleteName)}
+                            onClick={() => openAppleCalendar(s, athleteName)}
                             className="flex-1 text-xs py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                           >
-                            📅 Apple / Outlook
+                            📅 Apple Calendar
                           </button>
                           <a
                             href={googleCalendarURL(s, athleteName)}
@@ -224,10 +224,10 @@ export default function AthletePublicView() {
         {/* Bulk calendar export */}
         {sessions.filter(s => s.start_time).length > 1 && (
           <button
-            onClick={() => downloadAllICS(sessions, athleteName)}
+            onClick={() => openAllAppleCalendar(sessions, athleteName)}
             className="w-full mt-2 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-900 transition-colors"
           >
-            📅 Export all sessions to calendar
+            📅 Add all to Apple Calendar
           </button>
         )}
 
@@ -277,7 +277,7 @@ function toICSDate(dateStr, timeStr) {
   return `${date}T${time}`
 }
 
-function downloadICS(session, athleteName) {
+function openAppleCalendar(session, athleteName) {
   const start = toICSDate(session.session_date, session.start_time)
   const end = toICSDate(session.session_date, session.end_time || session.start_time)
   const lines = [
@@ -295,7 +295,7 @@ function downloadICS(session, athleteName) {
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
   if (isIOS) {
-    window.open('data:text/calendar;charset=utf-8,' + encodeURIComponent(lines))
+    window.location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines)
     return
   }
 
@@ -303,14 +303,13 @@ function downloadICS(session, athleteName) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${session.session_title.replace(/\s+/g, '-')}.ics`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-function downloadAllICS(sessions, athleteName) {
+function openAllAppleCalendar(sessions, athleteName) {
   const events = sessions
     .filter(s => s.start_time)
     .map(s => {
@@ -336,7 +335,7 @@ function downloadAllICS(sessions, athleteName) {
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
   if (isIOS) {
-    window.open('data:text/calendar;charset=utf-8,' + encodeURIComponent(ics))
+    window.location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics)
     return
   }
 
@@ -344,11 +343,10 @@ function downloadAllICS(sessions, athleteName) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${athleteName.replace(/\s+/g, '-')}-sessions.ics`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function googleCalendarURL(session, athleteName) {
