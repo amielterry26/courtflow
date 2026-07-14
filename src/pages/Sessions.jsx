@@ -83,10 +83,10 @@ export default function Sessions() {
                     {s.start_time && (
                       <div className="flex gap-2 px-4 pb-3 border-t border-zinc-100 dark:border-zinc-800 pt-2">
                         <button
-                          onClick={() => downloadICS(s)}
+                          onClick={() => openAppleCalendar(s)}
                           className="flex-1 text-xs py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                         >
-                          📅 Apple / Outlook
+                          📅 Apple Calendar
                         </button>
                         <a
                           href={googleCalendarURL(s)}
@@ -129,7 +129,7 @@ function toICSDate(dateStr, timeStr) {
   return `${date}T${time}`
 }
 
-function downloadICS(session) {
+function openAppleCalendar(session) {
   const start = toICSDate(session.session_date, session.start_time)
   const end = toICSDate(session.session_date, session.end_time || session.start_time)
   const lines = [
@@ -145,13 +145,20 @@ function downloadICS(session) {
     'END:VCALENDAR',
   ].filter(Boolean).join('\r\n')
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  if (isIOS) {
+    window.location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines)
+    return
+  }
+
   const blob = new Blob([lines], { type: 'text/calendar' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `${session.session_title.replace(/\s+/g, '-')}.ics`
+  document.body.appendChild(a)
   a.click()
-  URL.revokeObjectURL(url)
+  document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function googleCalendarURL(session) {
