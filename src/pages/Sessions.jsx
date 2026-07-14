@@ -133,10 +133,10 @@ function toICSDate(dateStr, timeStr) {
   return `${date}T${time}`
 }
 
-function openAppleCalendar(session) {
+async function openAppleCalendar(session) {
   const start = toICSDate(session.session_date, session.start_time)
   const end = toICSDate(session.session_date, session.end_time || session.start_time)
-  const lines = [
+  const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//CourtFlow//EN',
@@ -149,20 +149,15 @@ function openAppleCalendar(session) {
     'END:VCALENDAR',
   ].filter(Boolean).join('\r\n')
 
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  if (isIOS) {
-    window.location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines)
+  const file = new File([ics], 'courtflow.ics', { type: 'text/calendar' })
+  if (typeof navigator.share === 'function' && navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file] }) } catch { /* user cancelled */ }
     return
   }
-
-  const blob = new Blob([lines], { type: 'text/calendar' })
+  const blob = new Blob([ics], { type: 'text/calendar' })
   const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  window.open(url, '_blank')
+  setTimeout(() => URL.revokeObjectURL(url), 2000)
 }
 
 function googleCalendarURL(session) {
