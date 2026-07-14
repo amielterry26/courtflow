@@ -23,7 +23,8 @@ const CATEGORY_LABELS = {
 export default function AthletePublicView() {
   const { token } = useParams()
   const [athlete, setAthlete] = useState(null)
-  const [sessions, setSessions] = useState([])
+  const [upcoming, setUpcoming] = useState([])
+  const [past, setPast] = useState([])
   const [notFound, setNotFound] = useState(false)
   const [expanded, setExpanded] = useState(new Set())
 
@@ -38,14 +39,25 @@ export default function AthletePublicView() {
       if (!a) { setNotFound(true); return }
       setAthlete(a)
 
-      const { data: s } = await supabase
+      const today = new Date().toISOString().split('T')[0]
+
+      const { data: up } = await supabase
         .from('sessions')
         .select('*, session_athletes!inner(athlete_id), session_drills(*, drill:drills(title, category, description))')
         .eq('session_athletes.athlete_id', a.id)
-        .gte('session_date', new Date().toISOString().split('T')[0])
+        .gte('session_date', today)
         .order('session_date')
         .limit(10)
-      setSessions(s ?? [])
+      setUpcoming(up ?? [])
+
+      const { data: prev } = await supabase
+        .from('sessions')
+        .select('*, session_athletes!inner(athlete_id), session_drills(*, drill:drills(title, category, description))')
+        .eq('session_athletes.athlete_id', a.id)
+        .lt('session_date', today)
+        .order('session_date', { ascending: false })
+        .limit(20)
+      setPast(prev ?? [])
     }
     load()
   }, [token])
@@ -94,11 +106,14 @@ export default function AthletePublicView() {
           </p>
         </div>
 
-        {/* Goals */}
-        {athlete.goals && (
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
-            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Goals</h2>
-            <p className="text-sm text-zinc-700 dark:text-zinc-300">{athlete.goals}</p>
+        {/* Development */}
+        {(athlete.goals || athlete.strengths || athlete.weaknesses || athlete.notes) && (
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4 space-y-3">
+            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Development</h2>
+            {athlete.goals && <DevItem label="Goals" value={athlete.goals} />}
+            {athlete.strengths && <DevItem label="Strengths" value={athlete.strengths} />}
+            {athlete.weaknesses && <DevItem label="Areas to Improve" value={athlete.weaknesses} />}
+            {athlete.notes && <DevItem label="Notes" value={athlete.notes} />}
           </div>
         )}
 
@@ -125,12 +140,12 @@ export default function AthletePublicView() {
         <div className="space-y-3">
           <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide px-1">Upcoming Sessions</h2>
 
-          {sessions.length === 0 ? (
+          {upcoming.length === 0 ? (
             <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 text-center">
               <p className="text-sm text-zinc-400">No upcoming sessions scheduled</p>
             </div>
           ) : (
-            sessions.map(s => {
+            upcoming.map(s => {
               const isOpen = expanded.has(s.id)
               const drills = [...(s.session_drills ?? [])].sort((a, b) => a.order_index - b.order_index)
               const grouped = groupByCategory(drills)
@@ -223,19 +238,81 @@ export default function AthletePublicView() {
         </div>
 
         {/* Bulk calendar export */}
-        {sessions.filter(s => s.start_time).length > 1 && (
+        {upcoming.filter(s => s.start_time).length > 1 && (
           <button
-            onClick={() => openAllAppleCalendar(sessions, athleteName)}
+            onClick={() => openAllAppleCalendar(upcoming, athleteName)}
             className="w-full mt-2 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-900 transition-colors"
           >
             📅 Add all to Apple Calendar
           </button>
         )}
 
+        {/* Past sessions */}
+        {past.length > 0 && (
+          <div className="space-y-3 mt-6">
+            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide px-1">Session History</h2>
+            {past.map(s => {
+              const isOpen = expanded.has(s.id)
+              const drills = [...(s.session_drills ?? [])].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+              const grouped = groupByCategory(drills)
+              const dateLabel = formatDate(s.session_date)
+
+              return (
+                <div key={s.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden opacity-75">
+                  <button
+                    onClick={() => toggleExpand(s.id)}
+                    className="w-full text-left px-4 py-4 flex items-start justify-between gap-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-zinc-900 dark:text-zinc-100 truncate">{s.session_title}</p>
+                      <p className="text-xs text-zinc-400 mt-0.5">{dateLabel}</p>
+                    </div>
+                    <span className="text-zinc-400 text-sm mt-0.5 flex-shrink-0">{isOpen ? '▲' : '▼'}</span>
+                  </button>
+                  {isOpen && (
+                    <div className="border-t border-zinc-100 dark:border-zinc-800 px-4 pt-4 pb-5 space-y-4">
+                      {grouped.length === 0 ? (
+                        <p className="text-sm text-zinc-400">No drills recorded</p>
+                      ) : (
+                        grouped.map(({ category, drills: catDrills }) => (
+                          <div key={category}>
+                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">
+                              {CATEGORY_LABELS[category] ?? category}
+                            </p>
+                            <div className="space-y-1">
+                              {catDrills.map(sd => (
+                                <div key={sd.id} className="flex gap-2">
+                                  <span className="text-blue-400 mt-0.5 flex-shrink-0">•</span>
+                                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{sd.drill?.title}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
         <p className="text-center text-xs text-zinc-300 dark:text-zinc-700 mt-8">
           Powered by CourtFlow
         </p>
       </div>
+    </div>
+  )
+}
+
+// ─── Components ───────────────────────────────────────────────────────────────
+
+function DevItem({ label, value }) {
+  return (
+    <div>
+      <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-0.5">{label}</p>
+      <p className="text-sm text-zinc-700 dark:text-zinc-300">{value}</p>
     </div>
   )
 }
