@@ -293,12 +293,20 @@ function downloadICS(session, athleteName) {
     'END:VCALENDAR',
   ].filter(Boolean).join('\r\n')
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  if (isIOS) {
+    window.open('data:text/calendar;charset=utf-8,' + encodeURIComponent(lines))
+    return
+  }
+
   const blob = new Blob([lines], { type: 'text/calendar' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = `${session.session_title.replace(/\s+/g, '-')}.ics`
+  document.body.appendChild(a)
   a.click()
+  document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
 
@@ -326,12 +334,20 @@ function downloadAllICS(sessions, athleteName) {
     'END:VCALENDAR',
   ].join('\r\n')
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  if (isIOS) {
+    window.open('data:text/calendar;charset=utf-8,' + encodeURIComponent(ics))
+    return
+  }
+
   const blob = new Blob([ics], { type: 'text/calendar' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = `${athleteName.replace(/\s+/g, '-')}-sessions.ics`
+  document.body.appendChild(a)
   a.click()
+  document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
 
