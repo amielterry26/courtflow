@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-const CATEGORIES = ['all', 'ball handling', 'shooting', 'finishing', 'footwork', 'defense', 'conditioning', 'IQ', 'warmup']
+const CATEGORIES = ['all', 'ball handling', 'shooting', 'finishing', 'footwork', 'defense', 'strength & conditioning', 'IQ', 'warmup', 'recovery']
 
 const DIFF_COLORS = {
   beginner: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400',
@@ -25,7 +25,7 @@ export default function Drills() {
 
   const filtered = drills.filter(d => {
     const matchCat = category === 'all' || d.category === category
-    const matchSearch = d.title.toLowerCase().includes(search.toLowerCase())
+    const matchSearch = (d.title ?? '').toLowerCase().includes(search.toLowerCase())
     return matchCat && matchSearch
   })
 

@@ -36,7 +36,7 @@ export default function SessionDetail() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('sessions')
-      .select('*, session_athletes(athlete:athletes(first_name, last_name))')
+      .select('*, session_athletes(athlete_id, athlete:athletes(first_name, last_name))')
       .eq('id', id)
       .single()
     setSession(data)
@@ -103,6 +103,53 @@ export default function SessionDetail() {
     navigate('/sessions')
   }
 
+  async function duplicateSession() {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const newDate = tomorrow.toISOString().split('T')[0]
+
+    const { data: newSession, error } = await supabase
+      .from('sessions')
+      .insert({
+        session_title: session.session_title,
+        session_date: newDate,
+        start_time: session.start_time,
+        end_time: session.end_time,
+        location: session.location,
+        notes: session.notes,
+      })
+      .select()
+      .single()
+    if (error || !newSession) return
+
+    // Copy athletes
+    if (athletes.length > 0) {
+      const athleteIds = session.session_athletes?.map(sa => sa.athlete?.id ?? sa.athlete_id).filter(Boolean) ?? []
+      if (athleteIds.length > 0) {
+        await supabase.from('session_athletes').insert(
+          athleteIds.map(athlete_id => ({ session_id: newSession.id, athlete_id }))
+        )
+      }
+    }
+
+    // Copy drills
+    if (sessionDrills.length > 0) {
+      await supabase.from('session_drills').insert(
+        sessionDrills.map(sd => ({
+          session_id: newSession.id,
+          drill_id: sd.drill_id,
+          order_index: sd.order_index,
+          custom_notes: sd.custom_notes,
+          target_reps: sd.target_reps,
+          target_makes: sd.target_makes,
+          duration_minutes: sd.duration_minutes,
+        }))
+      )
+    }
+
+    navigate(`/sessions/${newSession.id}`)
+  }
+
   if (!session) return <PageLoading />
 
   const availableDrills = allDrills.filter(d =>
@@ -117,6 +164,10 @@ export default function SessionDetail() {
           <Link to="/sessions" className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">← Back</Link>
         </div>
         <div className="flex gap-2">
+          <button onClick={duplicateSession}
+            className="text-sm px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            Duplicate
+          </button>
           <Link to={`/sessions/${id}/edit`}
             className="text-sm px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
             Edit
@@ -151,6 +202,25 @@ export default function SessionDetail() {
           <p className="mt-3 text-sm text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-800 pt-3">
             {session.notes}
           </p>
+        )}
+
+        {session.start_time && (
+          <div className="flex gap-2 mt-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+            <button
+              onClick={() => downloadICS(session)}
+              className="flex-1 text-xs py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+            >
+              📅 Apple / Outlook
+            </button>
+            <a
+              href={googleCalendarURL(session)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 text-xs py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors text-center"
+            >
+              📅 Google Calendar
+            </a>
+          </div>
         )}
       </div>
 
@@ -312,6 +382,50 @@ function formatTime(t) {
   const [h, m] = t.split(':')
   const hr = parseInt(h)
   return `${hr % 12 || 12}:${m} ${hr >= 12 ? 'PM' : 'AM'}`
+}
+
+function toICSDate(dateStr, timeStr) {
+  const date = dateStr.replace(/-/g, '')
+  if (!timeStr) return date
+  const time = timeStr.replace(/:/g, '').slice(0, 6)
+  return `${date}T${time}`
+}
+
+function downloadICS(session) {
+  const start = toICSDate(session.session_date, session.start_time)
+  const end = toICSDate(session.session_date, session.end_time || session.start_time)
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//CourtFlow//EN',
+    'BEGIN:VEVENT',
+    `DTSTART:${start}`,
+    `DTEND:${end}`,
+    `SUMMARY:${session.session_title}`,
+    session.location ? `LOCATION:${session.location}` : null,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].filter(Boolean).join('\r\n')
+
+  const blob = new Blob([lines], { type: 'text/calendar' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${session.session_title.replace(/\s+/g, '-')}.ics`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function googleCalendarURL(session) {
+  const start = toICSDate(session.session_date, session.start_time)
+  const end = toICSDate(session.session_date, session.end_time || session.start_time)
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: session.session_title,
+    dates: `${start}/${end}`,
+    ...(session.location && { location: session.location }),
+  })
+  return `https://calendar.google.com/calendar/render?${params}`
 }
 
 function PageLoading() {

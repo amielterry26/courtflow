@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase'
 export default function Intake() {
   const [submissions, setSubmissions] = useState([])
   const [loading, setLoading] = useState(true)
+  const [newShareLink, setNewShareLink] = useState(null)
+  const [linkCopied, setLinkCopied] = useState(false)
 
   useEffect(() => {
     supabase
@@ -17,8 +19,8 @@ export default function Intake() {
   }, [])
 
   async function approve(sub) {
-    // Create athlete from submission
-    const { error } = await supabase.from('athletes').insert({
+    setNewShareLink(null)
+    const { data: newAthlete, error } = await supabase.from('athletes').insert({
       first_name: sub.child_name.split(' ')[0] ?? sub.child_name,
       last_name: sub.child_name.split(' ').slice(1).join(' ') || '',
       age: sub.age,
@@ -33,11 +35,14 @@ export default function Intake() {
       parent_phone: sub.parent_phone,
       parent_email: sub.parent_email,
       status: 'active',
-    })
+    }).select().single()
 
-    if (!error) {
+    if (!error && newAthlete) {
       await supabase.from('intake_submissions').update({ reviewed: true }).eq('id', sub.id)
       setSubmissions(prev => prev.map(s => s.id === sub.id ? { ...s, reviewed: true } : s))
+      const link = `${window.location.origin}/athlete/${newAthlete.share_token}`
+      setNewShareLink({ name: sub.child_name, url: link })
+      setLinkCopied(false)
     }
   }
 
@@ -56,6 +61,33 @@ export default function Intake() {
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Intake</h1>
       </div>
+
+      {/* Newly approved athlete share link */}
+      {newShareLink && (
+        <div className="bg-green-50 dark:bg-green-950 rounded-2xl border border-green-200 dark:border-green-800 p-4 mb-4">
+          <p className="text-sm font-semibold text-green-800 dark:text-green-200 mb-1">
+            ✓ {newShareLink.name} added as athlete
+          </p>
+          <p className="text-xs text-green-600 dark:text-green-400 break-all font-mono mb-3">{newShareLink.url}</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(newShareLink.url)
+                setLinkCopied(true)
+              }}
+              className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
+            >
+              {linkCopied ? '✓ Copied!' : 'Copy parent link'}
+            </button>
+            <button
+              onClick={() => setNewShareLink(null)}
+              className="text-xs text-green-600 dark:text-green-400 px-3 py-1.5"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Share link */}
       <div className="bg-blue-50 dark:bg-blue-950 rounded-2xl border border-blue-100 dark:border-blue-900 p-4 mb-5">

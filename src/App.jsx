@@ -17,6 +17,7 @@ import SessionForm from './pages/SessionForm'
 import Intake from './pages/Intake'
 import IntakeForm from './pages/IntakeForm'
 import AthletePublicView from './pages/AthletePublicView'
+import WeeklySchedule from './pages/WeeklySchedule'
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
                 <Layout>
                   <Routes>
                     <Route path="/" element={<Today />} />
+                    <Route path="/schedule" element={<WeeklySchedule />} />
 
                     <Route path="/athletes" element={<Athletes />} />
                     <Route path="/athletes/new" element={<AthleteForm />} />

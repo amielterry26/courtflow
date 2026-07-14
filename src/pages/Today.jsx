@@ -36,6 +36,7 @@ export default function Today() {
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
+          <Link to="/schedule" className="text-xs text-blue-500 mt-0.5 inline-block">Week view →</Link>
         </div>
         <Link
           to="/sessions/new"
@@ -60,7 +61,7 @@ export default function Today() {
 
 function SessionCard({ session }) {
   const athletes = session.session_athletes?.map(sa => sa.athlete) ?? []
-  const drills = [...(session.session_drills ?? [])].sort((a, b) => a.order_index - b.order_index)
+  const drills = [...(session.session_drills ?? [])].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
 
   return (
     <Link to={`/sessions/${session.id}`} className="block">

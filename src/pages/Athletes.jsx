@@ -67,7 +67,7 @@ export default function Athletes() {
             <Link key={a.id} to={`/athletes/${a.id}`} className="block">
               <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center gap-3 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
                 <div className="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-sm flex-shrink-0">
-                  {a.first_name[0]}{a.last_name[0]}
+                  {a.first_name?.[0] ?? '?'}{a.last_name?.[0] ?? ''}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-zinc-900 dark:text-zinc-100 truncate">{a.first_name} {a.last_name}</p>

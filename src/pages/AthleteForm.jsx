@@ -6,6 +6,7 @@ const BLANK = {
   first_name: '', last_name: '', age: '', grade: '', school: '', team: '',
   position: '', favorite_player: '', parent_name: '', parent_phone: '',
   parent_email: '', skill_level: '', goals: '', strengths: '', weaknesses: '', notes: '',
+  sessions_purchased: '', sessions_used: '',
 }
 
 export default function AthleteForm() {
@@ -33,7 +34,12 @@ export default function AthleteForm() {
     setSaving(true)
     setError('')
 
-    const payload = { ...form, age: form.age ? parseInt(form.age) : null }
+    const payload = {
+      ...form,
+      age: form.age ? parseInt(form.age) : null,
+      sessions_purchased: form.sessions_purchased ? parseInt(form.sessions_purchased) : null,
+      sessions_used: form.sessions_used ? parseInt(form.sessions_used) : null,
+    }
 
     const { error } = isEdit
       ? await supabase.from('athletes').update(payload).eq('id', id)
@@ -100,6 +106,13 @@ export default function AthleteForm() {
           <Row>
             <Field label="Phone" value={form.parent_phone} onChange={set('parent_phone')} type="tel" />
             <Field label="Email" value={form.parent_email} onChange={set('parent_email')} type="email" />
+          </Row>
+        </Section>
+
+        <Section title="Session Pack">
+          <Row>
+            <Field label="Sessions purchased" value={form.sessions_purchased} onChange={set('sessions_purchased')} type="number" />
+            <Field label="Sessions used" value={form.sessions_used} onChange={set('sessions_used')} type="number" />
           </Row>
         </Section>
 

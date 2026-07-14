@@ -38,6 +38,7 @@ export default function IntakeForm() {
           access_key:  import.meta.env.VITE_WEB3FORMS_KEY,
           subject:     `New intake: ${form.child_name}`,
           from_name:   'CourtFlow Intake Form',
+          cc:          'Derek.mason2013@gmail.com',
           message: [
             `Child: ${form.child_name}`,
             `Age: ${form.age || '—'}  |  Grade: ${form.grade || '—'}`,

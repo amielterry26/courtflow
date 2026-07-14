@@ -11,20 +11,38 @@ const SKILL_COLORS = {
 export default function AthleteDetail() {
   const { id } = useParams()
   const [athlete, setAthlete] = useState(null)
-  const [sessions, setSessions] = useState([])
+  const [upcomingSessions, setUpcomingSessions] = useState([])
+  const [pastSessions, setPastSessions] = useState([])
+  const [totalSessions, setTotalSessions] = useState(0)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
+    const today = new Date().toISOString().split('T')[0]
     supabase.from('athletes').select('*').eq('id', id).single().then(({ data }) => setAthlete(data))
 
     supabase
       .from('sessions')
       .select('*, session_athletes!inner(athlete_id), session_drills(*, drill:drills(title))')
       .eq('session_athletes.athlete_id', id)
-      .gte('session_date', new Date().toISOString().split('T')[0])
+      .gte('session_date', today)
       .order('session_date')
       .limit(5)
-      .then(({ data }) => setSessions(data ?? []))
+      .then(({ data }) => setUpcomingSessions(data ?? []))
+
+    supabase
+      .from('sessions')
+      .select('*, session_athletes!inner(athlete_id), session_drills(id)')
+      .eq('session_athletes.athlete_id', id)
+      .lt('session_date', today)
+      .order('session_date', { ascending: false })
+      .limit(10)
+      .then(({ data }) => setPastSessions(data ?? []))
+
+    supabase
+      .from('sessions')
+      .select('id, session_athletes!inner(athlete_id)', { count: 'exact' })
+      .eq('session_athletes.athlete_id', id)
+      .then(({ count }) => setTotalSessions(count ?? 0))
   }, [id])
 
   function copyShareLink() {
@@ -48,7 +66,7 @@ export default function AthleteDetail() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">
-              {athlete.first_name[0]}{athlete.last_name[0]}
+              {athlete.first_name?.[0] ?? '?'}{athlete.last_name?.[0] ?? ''}
             </div>
             <div>
               <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
@@ -57,6 +75,9 @@ export default function AthleteDetail() {
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 {[athlete.position, athlete.school].filter(Boolean).join(' · ')}
               </p>
+              {totalSessions > 0 && (
+                <p className="text-xs text-zinc-400 mt-0.5">{totalSessions} total session{totalSessions !== 1 ? 's' : ''}</p>
+              )}
             </div>
           </div>
           <Link to={`/athletes/${id}/edit`} className="text-sm text-blue-600 dark:text-blue-400 font-medium">Edit</Link>
@@ -90,6 +111,14 @@ export default function AthleteDetail() {
         </Grid>
       </div>
 
+      {/* Session Pack */}
+      {athlete.sessions_purchased > 0 && (
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
+          <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Session Pack</h2>
+          <SessionPackBar used={athlete.sessions_used ?? 0} purchased={athlete.sessions_purchased} />
+        </div>
+      )}
+
       {/* Development */}
       {(athlete.goals || athlete.strengths || athlete.weaknesses || athlete.notes) && (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4 space-y-3">
@@ -102,18 +131,18 @@ export default function AthleteDetail() {
       )}
 
       {/* Upcoming sessions */}
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
         <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Upcoming Sessions</h2>
-        {sessions.length === 0 ? (
+        {upcomingSessions.length === 0 ? (
           <p className="text-sm text-zinc-400">No upcoming sessions</p>
         ) : (
           <div className="space-y-2">
-            {sessions.map(s => (
+            {upcomingSessions.map(s => (
               <Link key={s.id} to={`/sessions/${s.id}`} className="block">
                 <div className="flex items-center justify-between rounded-lg border border-zinc-100 dark:border-zinc-800 px-3 py-2 hover:border-blue-200 dark:hover:border-blue-800 transition-colors">
                   <div>
                     <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{s.session_title}</p>
-                    <p className="text-xs text-zinc-400">{s.session_date}</p>
+                    <p className="text-xs text-zinc-400">{formatDate(s.session_date)}</p>
                   </div>
                   <span className="text-xs text-zinc-400">{s.session_drills?.length ?? 0} drills →</span>
                 </div>
@@ -122,12 +151,57 @@ export default function AthleteDetail() {
           </div>
         )}
       </div>
+
+      {/* Past sessions */}
+      {pastSessions.length > 0 && (
+        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4">
+          <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Session History</h2>
+          <div className="space-y-2">
+            {pastSessions.map(s => (
+              <Link key={s.id} to={`/sessions/${s.id}`} className="block">
+                <div className="flex items-center justify-between rounded-lg border border-zinc-100 dark:border-zinc-800 px-3 py-2 hover:border-blue-200 dark:hover:border-blue-800 transition-colors opacity-70">
+                  <div>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{s.session_title}</p>
+                    <p className="text-xs text-zinc-400">{formatDate(s.session_date)}</p>
+                  </div>
+                  <span className="text-xs text-zinc-400">{s.session_drills?.length ?? 0} drills →</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SessionPackBar({ used, purchased }) {
+  const pct = Math.min(Math.round((used / purchased) * 100), 100)
+  const remaining = Math.max(purchased - used, 0)
+  return (
+    <div>
+      <div className="flex items-end justify-between mb-1.5">
+        <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          {used} <span className="text-base font-normal text-zinc-400">of {purchased}</span>
+        </p>
+        <p className="text-sm text-zinc-400">{remaining} remaining</p>
+      </div>
+      <div className="w-full h-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-blue-500 rounded-full transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
     </div>
   )
 }
 
 function Grid({ children }) {
   return <div className="grid grid-cols-2 gap-3">{children}</div>
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
 function InfoItem({ label, value, span }) {

@@ -7,6 +7,7 @@ const BLANK = {
   session_date: new Date().toISOString().split('T')[0],
   start_time: '',
   end_time: '',
+  location: '',
   notes: '',
 }
 
@@ -87,6 +88,7 @@ export default function SessionForm() {
             <Field label="Start time" value={form.start_time} onChange={set('start_time')} type="time" />
             <Field label="End time" value={form.end_time} onChange={set('end_time')} type="time" />
           </div>
+          <Field label="Location" value={form.location} onChange={set('location')} placeholder="e.g. Lifetime Fitness, Home..." />
           <TextArea label="Notes" value={form.notes} onChange={set('notes')} />
         </div>
 
@@ -125,11 +127,11 @@ export default function SessionForm() {
   )
 }
 
-function Field({ label, required, type = 'text', value, onChange }) {
+function Field({ label, required, type = 'text', value, onChange, placeholder }) {
   return (
     <div>
       <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">{label}</label>
-      <input type={type} required={required} value={value ?? ''} onChange={onChange}
+      <input type={type} required={required} value={value ?? ''} onChange={onChange} placeholder={placeholder}
         className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
     </div>
   )
