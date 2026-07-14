@@ -3,20 +3,21 @@ import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const CATEGORY_ORDER = [
-  'warmup', 'ball handling', 'shooting', 'finishing',
-  'footwork', 'defense', 'IQ', 'strength & conditioning', 'recovery',
+  'warmup', 'recovery', 'strength & conditioning', 'defense',
+  'footwork', 'finishing', 'shooting', 'ball handling', 'live action', 'IQ',
 ]
 
 const CATEGORY_LABELS = {
-  'ball handling':          'Ball Handling',
-  'shooting':               'Shooting',
-  'finishing':              'Finishing',
-  'footwork':               'Footwork',
-  'defense':                'Defense',
-  'strength & conditioning':'Strength & Conditioning',
-  'IQ':                     'Basketball IQ',
-  'warmup':                 'Warmup',
+  'warmup':                 'Warm-Up',
   'recovery':               'Recovery',
+  'strength & conditioning':'Strength & Conditioning',
+  'defense':                'Defense',
+  'footwork':               'Footwork',
+  'finishing':              'Finishing',
+  'shooting':               'Shooting',
+  'ball handling':          'Ball Handling',
+  'live action':            'Live Action',
+  'IQ':                     'Basketball IQ',
 }
 
 export default function AthletePublicView() {

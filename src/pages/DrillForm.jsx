@@ -112,7 +112,7 @@ export default function DrillForm() {
               <select required value={form.category} onChange={set('category')}
                 className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Select</option>
-                {['ball handling','shooting','finishing','footwork','defense','strength & conditioning','IQ','warmup','recovery'].map(c => (
+                {['warmup','recovery','strength & conditioning','defense','footwork','finishing','shooting','ball handling','live action'].map(c => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>

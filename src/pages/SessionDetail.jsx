@@ -18,6 +18,8 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../lib/supabase'
 
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+
 export default function SessionDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -206,12 +208,14 @@ export default function SessionDetail() {
 
         {session.start_time && (
           <div className="flex gap-2 mt-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
-            <button
-              onClick={() => openAppleCalendar(session)}
-              className="flex-1 text-xs py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-            >
-              📅 Apple Calendar
-            </button>
+            {IS_IOS && (
+              <button
+                onClick={() => openAppleCalendar(session)}
+                className="flex-1 text-xs py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              >
+                📅 Apple Calendar
+              </button>
+            )}
             <a
               href={googleCalendarURL(session)}
               target="_blank"

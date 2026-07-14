@@ -4,9 +4,9 @@ import { useTheme } from '../context/ThemeContext'
 
 const nav = [
   { to: '/', label: 'Today' },
-  { to: '/athletes', label: 'Athletes' },
   { to: '/drills', label: 'Drills' },
   { to: '/sessions', label: 'Sessions' },
+  { to: '/athletes', label: 'Athletes' },
   { to: '/intake', label: 'Intake' },
 ]
 

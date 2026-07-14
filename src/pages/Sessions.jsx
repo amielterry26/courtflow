@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+
 export default function Sessions() {
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -82,12 +84,14 @@ export default function Sessions() {
                     </Link>
                     {s.start_time && (
                       <div className="flex gap-2 px-4 pb-3 border-t border-zinc-100 dark:border-zinc-800 pt-2">
-                        <button
-                          onClick={() => openAppleCalendar(s)}
-                          className="flex-1 text-xs py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                        >
-                          📅 Apple Calendar
-                        </button>
+                        {IS_IOS && (
+                          <button
+                            onClick={() => openAppleCalendar(s)}
+                            className="flex-1 text-xs py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                          >
+                            📅 Apple Calendar
+                          </button>
+                        )}
                         <a
                           href={googleCalendarURL(s)}
                           target="_blank"

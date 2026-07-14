@@ -2,6 +2,47 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
+function usePlayerRules(athleteId) {
+  const [rules, setRules] = useState([])
+
+  useEffect(() => {
+    supabase.from('player_rules').select('*').eq('athlete_id', athleteId).order('order_index')
+      .then(({ data }) => setRules(data ?? []))
+  }, [athleteId])
+
+  async function addRule(text) {
+    const { data } = await supabase.from('player_rules')
+      .insert({ athlete_id: athleteId, rule: text, order_index: rules.length })
+      .select().single()
+    if (data) setRules(prev => [...prev, data])
+  }
+
+  async function updateRule(id, text) {
+    await supabase.from('player_rules').update({ rule: text }).eq('id', id)
+    setRules(prev => prev.map(r => r.id === id ? { ...r, rule: text } : r))
+  }
+
+  async function deleteRule(id) {
+    await supabase.from('player_rules').delete().eq('id', id)
+    setRules(prev => prev.filter(r => r.id !== id))
+  }
+
+  async function moveRule(id, direction) {
+    const idx = rules.findIndex(r => r.id === id)
+    const swapIdx = idx + direction
+    if (swapIdx < 0 || swapIdx >= rules.length) return
+    const reordered = [...rules]
+    ;[reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]]
+    setRules(reordered)
+    await Promise.all([
+      supabase.from('player_rules').update({ order_index: swapIdx }).eq('id', reordered[swapIdx].id),
+      supabase.from('player_rules').update({ order_index: idx }).eq('id', reordered[idx].id),
+    ])
+  }
+
+  return { rules, addRule, updateRule, deleteRule, moveRule }
+}
+
 const SKILL_COLORS = {
   beginner: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400',
   intermediate: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400',
@@ -11,6 +52,7 @@ const SKILL_COLORS = {
 export default function AthleteDetail() {
   const { id } = useParams()
   const [athlete, setAthlete] = useState(null)
+  const { rules, addRule, updateRule, deleteRule, moveRule } = usePlayerRules(id)
   const [upcomingSessions, setUpcomingSessions] = useState([])
   const [pastSessions, setPastSessions] = useState([])
   const [totalSessions, setTotalSessions] = useState(0)
@@ -130,6 +172,9 @@ export default function AthleteDetail() {
         </div>
       )}
 
+      {/* Player Rules */}
+      <PlayerRules rules={rules} onAdd={addRule} onUpdate={updateRule} onDelete={deleteRule} onMove={moveRule} />
+
       {/* Upcoming sessions */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
         <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Upcoming Sessions</h2>
@@ -171,6 +216,95 @@ export default function AthleteDetail() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function PlayerRules({ rules, onAdd, onUpdate, onDelete, onMove }) {
+  const [newRule, setNewRule] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [editText, setEditText] = useState('')
+
+  async function handleAdd() {
+    const text = newRule.trim()
+    if (!text) return
+    await onAdd(text)
+    setNewRule('')
+  }
+
+  function startEdit(rule) {
+    setEditingId(rule.id)
+    setEditText(rule.rule)
+  }
+
+  async function saveEdit(id) {
+    const text = editText.trim()
+    if (text) await onUpdate(id, text)
+    setEditingId(null)
+  }
+
+  return (
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
+      <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Player Rules</h2>
+
+      {rules.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {rules.map((r, i) => (
+            <div key={r.id} className="flex items-start gap-2 group">
+              <div className="flex flex-col gap-0.5 pt-0.5 flex-shrink-0">
+                <button
+                  onClick={() => onMove(r.id, -1)}
+                  disabled={i === 0}
+                  className="text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 disabled:opacity-20 text-xs leading-none"
+                >▲</button>
+                <button
+                  onClick={() => onMove(r.id, 1)}
+                  disabled={i === rules.length - 1}
+                  className="text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 disabled:opacity-20 text-xs leading-none"
+                >▼</button>
+              </div>
+              <span className="text-zinc-400 text-sm mt-0.5 flex-shrink-0">{i + 1}.</span>
+              {editingId === r.id ? (
+                <div className="flex-1 flex gap-2">
+                  <input
+                    value={editText}
+                    onChange={e => setEditText(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') saveEdit(r.id); if (e.key === 'Escape') setEditingId(null) }}
+                    autoFocus
+                    className="flex-1 text-sm px-2 py-1 rounded-lg border border-blue-400 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none"
+                  />
+                  <button onClick={() => saveEdit(r.id)} className="text-xs text-blue-500 font-medium">Save</button>
+                  <button onClick={() => setEditingId(null)} className="text-xs text-zinc-400">Cancel</button>
+                </div>
+              ) : (
+                <div className="flex-1 flex items-start justify-between gap-2">
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300">{r.rule}</p>
+                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                    <button onClick={() => startEdit(r)} className="text-xs text-blue-500">Edit</button>
+                    <button onClick={() => onDelete(r.id)} className="text-xs text-red-400">✕</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-2">
+        <input
+          value={newRule}
+          onChange={e => setNewRule(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleAdd() }}
+          placeholder="Add a rule..."
+          className="flex-1 text-sm px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={handleAdd}
+          className="text-sm px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+        >
+          Add
+        </button>
+      </div>
     </div>
   )
 }
