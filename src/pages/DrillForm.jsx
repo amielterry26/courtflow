@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const BLANK = {
@@ -67,7 +67,7 @@ export default function DrillForm() {
       }
       const { error } = await supabase.from('drills').update(payload).eq('id', id)
       if (error) { setError(error.message); setSaving(false); return }
-      navigate('/drills')
+      navigate(`/drills/${id}`)
     } else {
       // Create drill first to get ID, then upload video
       const { data: newDrill, error: insertError } = await supabase.from('drills').insert(payload).select().single()
@@ -98,7 +98,10 @@ export default function DrillForm() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">← Back</button>
+        {isEdit
+          ? <Link to={`/drills/${id}`} className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">← Back</Link>
+          : <Link to="/drills" className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">← Back</Link>
+        }
         <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{isEdit ? 'Edit Drill' : 'New Drill'}</h1>
       </div>
 

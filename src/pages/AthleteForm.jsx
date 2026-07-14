@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 const BLANK = {
   first_name: '', last_name: '', age: '', grade: '', school: '', team: '',
   position: '', favorite_player: '', parent_name: '', parent_phone: '',
-  parent_email: '', skill_level: '', goals: '', strengths: '', weaknesses: '', notes: '',
+  parent_email: '', skill_level: '', gender: '', goals: '', strengths: '', weaknesses: '', notes: '',
   sessions_purchased: '', sessions_used: '',
 }
 
@@ -86,19 +86,33 @@ export default function AthleteForm() {
             <Field label="Position" value={form.position} onChange={set('position')} />
           </Row>
           <Field label="Favorite player" value={form.favorite_player} onChange={set('favorite_player')} />
-          <div>
-            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Skill level</label>
-            <select
-              value={form.skill_level}
-              onChange={set('skill_level')}
-              className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select level</option>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-            </select>
-          </div>
+          <Row>
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Skill level</label>
+              <select
+                value={form.skill_level}
+                onChange={set('skill_level')}
+                className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select level</option>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Gender</label>
+              <select
+                value={form.gender ?? ''}
+                onChange={set('gender')}
+                className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          </Row>
         </Section>
 
         <Section title="Parent / Guardian">

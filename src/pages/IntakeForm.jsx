@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 const BLANK = {
-  child_name: '', age: '', grade: '', school: '', team: '', skill_level: '',
+  child_name: '', age: '', grade: '', school: '', team: '', skill_level: '', gender: '',
   goals: '', strengths: '', weaknesses: '',
   parent_name: '', parent_phone: '', parent_email: '',
 }
@@ -41,7 +41,7 @@ export default function IntakeForm() {
           cc:          'Derek.mason2013@gmail.com',
           message: [
             `Child: ${form.child_name}`,
-            `Age: ${form.age || '—'}  |  Grade: ${form.grade || '—'}`,
+            `Gender: ${form.gender || '—'}  |  Age: ${form.age || '—'}  |  Grade: ${form.grade || '—'}`,
             `School: ${form.school || '—'}  |  Team: ${form.team || '—'}`,
             `Skill level: ${form.skill_level || '—'}`,
             ``,
@@ -93,6 +93,15 @@ export default function IntakeForm() {
             </Row>
             <Field label="School" value={form.school} onChange={set('school')} />
             <Field label="Team (if any)" value={form.team} onChange={set('team')} />
+            <div>
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Gender *</label>
+              <select required value={form.gender} onChange={set('gender')}
+                className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
             <div>
               <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Skill level</label>
               <select value={form.skill_level} onChange={set('skill_level')}

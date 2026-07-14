@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const CATEGORIES = [
-  { value: 'all', label: 'All' },
   { value: 'warmup', label: 'Warm-Up' },
   { value: 'recovery', label: 'Recovery' },
   { value: 'strength & conditioning', label: 'Strength & Conditioning' },
@@ -35,14 +34,12 @@ export default function Drills() {
   }, [])
 
   function toggleCategory(value) {
-    if (value === 'all') {
-      setSelectedCats([])
-      return
-    }
     setSelectedCats(prev =>
       prev.includes(value) ? prev.filter(c => c !== value) : [...prev, value]
     )
   }
+
+  const nothingSelected = selectedCats.length === 0 && !search
 
   const filtered = drills.filter(d => {
     const matchCat = selectedCats.length === 0 || selectedCats.includes(d.category)
@@ -75,7 +72,7 @@ export default function Drills() {
       {/* Category filters — wrap onto multiple lines */}
       <div className="flex flex-wrap gap-2 mb-4">
         {CATEGORIES.map(({ value, label }) => {
-          const isActive = value === 'all' ? selectedCats.length === 0 : selectedCats.includes(value)
+          const isActive = selectedCats.includes(value)
           return (
             <button
               key={value}
@@ -83,7 +80,7 @@ export default function Drills() {
               className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-600 text-white'
-                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
               }`}
             >
               {label}
@@ -92,15 +89,16 @@ export default function Drills() {
         })}
       </div>
 
-      {filtered.length === 0 ? (
+      {nothingSelected ? (
         <div className="text-center py-16 text-zinc-400 dark:text-zinc-600">
           <div className="text-4xl mb-3">🏀</div>
-          <p className="font-medium">{search || selectedCats.length > 0 ? 'No results' : 'No drills yet'}</p>
-          {!search && selectedCats.length === 0 && (
-            <p className="text-sm mt-1">
-              <Link to="/drills/new" className="text-blue-500 hover:underline">Add your first drill</Link>
-            </p>
-          )}
+          <p className="font-medium text-zinc-500 dark:text-zinc-400">Select a category to browse drills</p>
+          <p className="text-sm mt-1 text-zinc-400 dark:text-zinc-500">Or search by name above</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-zinc-400 dark:text-zinc-600">
+          <div className="text-4xl mb-3">🏀</div>
+          <p className="font-medium">No results</p>
         </div>
       ) : (
         <div className="space-y-2">

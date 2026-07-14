@@ -1,0 +1,1062 @@
+Update the existing CourtFlow app with the changes below. Keep the current design and functionality intact unless specifically mentioned.
+
+==================================================
+1. DRILL CATEGORY FILTERING
+==================================================
+
+Each drill should still have only one category.
+
+However, in the Drills library, allow us to select multiple category filters at the same time.
+
+For example:
+- Selecting Recovery should show Recovery drills.
+- Selecting Strength & Conditioning should show Strength & Conditioning drills.
+- Selecting both Recovery and Strength & Conditioning should show drills from both categories together.
+- Use OR filtering between selected categories.
+
+The “All” option should show all drills and clear the other selected filters.
+
+Search should continue working with the selected category filters.
+
+==================================================
+2. FIX THE CATEGORY FILTER DISPLAY
+==================================================
+
+The drill category buttons currently scroll sideways, which makes some categories difficult to see.
+
+Change the category buttons so they wrap onto multiple lines instead of requiring horizontal scrolling.
+
+All categories should be visible and easy to select on desktop and mobile.
+
+The categories should be:
+
+- All
+- Warm-Up
+- Recovery
+- Strength & Conditioning
+- Defense
+- Footwork
+- Finishing
+- Shooting
+- Ball Handling
+- Live Action
+
+Selected categories should be visibly highlighted.
+
+==================================================
+3. PLAYER RULES
+==================================================
+
+Add a Player Rules section to each athlete profile.
+
+This should allow us to:
+
+- Add rules
+- Edit rules
+- Delete rules
+- Reorder rules
+- View all rules clearly on the athlete profile
+
+Examples of player rules:
+
+- Three dribbles or fewer
+- Make a decision within three seconds
+- Do not hold the ball at the three-point line
+- Keep your chest facing the basket
+
+Make this section easy to access on the athlete profile and place it near the athlete’s development information.
+
+==================================================
+4. BOTTOM NAVIGATION
+==================================================
+
+Change the bottom navigation order to:
+
+1. Today
+2. Drills
+3. Sessions
+4. Athletes
+5. Intake
+
+Keep the existing routes and icons.
+
+==================================================
+5. ADD THESE DRILLS
+==================================================
+
+Add the following drills to the existing CourtFlow drill library and assign each drill to the category listed below.
+
+Do not create duplicates if an identical drill already exists.
+
+--------------------
+WARM-UP
+--------------------
+
+- High Knees
+- Karaoke
+- Sumos
+- Lunge and Twist
+- Butt Kicks
+- Scoops
+- Skips
+- Toe-Tap Alternates
+- LCL/Meniscus Mobility
+- Offensive Burnout
+- Defensive Burnout
+- Ankle Mobility
+- Bear Crawl
+- Rapid Feet → Hip Turn → Lateral Step
+
+--------------------
+RECOVERY
+--------------------
+
+- Hip Mobility
+- Scorpions
+- Wall Arm/Chest Opener
+- Toe Touch
+- Hamstring Lunge
+- Hip Openers
+- Sit on Toes
+- Floor Mobility Series
+- Sphinx Pose
+- LCL/Meniscus Mobility
+- Ankle Mobility
+
+--------------------
+STRENGTH & CONDITIONING
+--------------------
+
+- Farmer Carries
+- Slow-Eccentric Push-Ups with Explosive Finish
+- Push-Up Hold
+- Body Hangs
+- Pull-Ups
+- Plank
+- Dead Hangs
+- Resistance Work
+- Sled Push
+- Sled Pull
+- Leg Raises
+- Sumo Squats
+- Core Work
+- Assisted Jumps
+- Split-Squat Holds — 30 Seconds
+- Pool Workout
+- Band Pull-Aparts
+- Upper-Back and Shoulder Posture Work
+- Stair Bounds
+- Explosive Step-Ups
+- Russian Twists
+- Flutter Kicks
+- Medicine-Ball Slam
+- Lateral Band Jumps — Up and Over
+- Weighted Jump Rope
+- Single-Leg Balance
+- Single-Leg Hops
+
+--------------------
+DEFENSE
+--------------------
+
+- Basic Defensive Slides
+- Green-Band Resistance Slides — 1, 2, 3, Quick Explode
+- Defensive Slides with Towel Behind Back
+- One-on-One Defense
+- Help-Side Defense
+- Help and Recover
+- Slide → Sprint
+- Help → Recover → Take Charge
+- Help → Recover → Closeout → Box Out → Rebound
+- Rebound → Opposite Wing → Finish High
+- Hip Turn → Shuffle → Sprint → Stop on a Dime
+- Defensive Burnout
+- Rapid Feet → Hip Turn → Lateral Step
+
+--------------------
+FOOTWORK
+--------------------
+
+- Speed Ladder
+- Ickey Shuffle
+- In-In/Out-Out Ladder
+- Lateral Band Jumps — Up and Over
+- Pivot Series — 45 Seconds Each Foot
+- Head-Fake Footwork — 45 Seconds
+- Head-Fake Variation — 45 Seconds
+- Weighted Jump Rope
+- Single-Leg Balance into Step-Back
+- Single-Leg Hops
+- Rapid Feet → Hip Turn → Lateral Step
+- Hip Turn → Shuffle → Sprint → Stop on a Dime
+- Medicine-Ball Slam → Jump Slide/Slide
+- Single-Leg Side-Step Shot — Left and Right
+- Pound Pick-Up to High Point — One-Two Step
+- Pound Hop-Step Shot
+- Catch Float — Two Steps
+- Catch Euro Float
+- Spin-Out One-Dribble Shot
+- Two-Foot and One-Foot Counter Stops
+- Scissor/Meet-the-Ball Shot
+- Drift Shot
+- Drift One-Dribble Shot
+
+--------------------
+FINISHING
+--------------------
+
+- Catch Float — Two Steps
+- Catch Euro Float — High/Low
+- Rebound → Opposite Wing → Finish High
+- Pound Pick-Up to High Point
+- Pound Hop-Step Finish
+- Single-Leg Hop Finish
+- Transition Finish
+- Rip-Attack Finish
+- One-on-One Finishing
+- Three-Dribbles-or-Less Attack
+
+--------------------
+SHOOTING
+--------------------
+
+- Form Shooting/Ground-Ups
+- Balance Shooting — No Dribble
+- Slow Balance and Pick-Up Point
+- Single-Leg Side-Step Shot — Left and Right
+- 180-Degree Shot
+- Two-Hand Pound Shot
+- One-Hand Pound Shot — Left and Right
+- Pound Pick-Up to High Point — One-Two Step
+- Pound Hop-Step Shot
+- Catch Float — Two Steps
+- Catch Euro Float — High/Low
+- Seven-Spot Shooting
+- Elbow-to-Elbow Shooting
+- Spin-Out One-Dribble Shot
+- Wing/Baseline Counter Shooting
+- Trail Threes — Catch / One Dribble Left / One Dribble Right
+- Counter Shot — Two-Foot Stop / One-Foot Stop
+- Catch-and-Shoot from Top Pass
+- Catch Jab Shot
+- Catch Double-Jab Shot
+- Scissor/Meet-the-Ball Shot
+- Drift Shot / Drift One-Dribble Shot
+- Transition Pull-Ups
+- Rip Pull-Ups
+- Transition Threes
+
+--------------------
+BALL HANDLING
+--------------------
+
+- Two-Hand Pound into Shot
+- One-Hand Pound into Shot — Left and Right
+- Pound Pick-Up to High Point
+- Pound Hop-Step Shot
+- Spin-Out One-Dribble Shot
+- Trail Threes — Catch / One Dribble Left / One Dribble Right
+- Drift One-Dribble Shot
+- Rip Pull-Up
+- Three-Dribbles-or-Less Attack
+- Three-Second Decision Drill
+- Tennis-Ball Reaction Drill
+
+--------------------
+LIVE ACTION
+--------------------
+
+- One-on-One Defense
+- Help and Recover
+- Help → Recover → Take Charge
+- Help → Recover → Closeout → Box Out → Rebound
+- Rebound → Opposite Wing → Finish High
+- Three-Dribbles-or-Less Live Play
+- Three-Second Decision Drill
+- Wing/Baseline Reaction Shooting
+- Trail Three Decision Series
+- Catch/Jab Decision Series
+- Transition Pull-Ups
+- Rip Pull-Ups
+- Transition Threes
+- Tennis-Ball Reaction Drill
+- Offensive Burnout
+- Defensive Burnout
+
+==================================================
+6. CHASE PLAYER RULES
+==================================================
+
+If Chase already exists as an athlete, add these rules to his Player Rules section:
+
+- Three dribbles or fewer
+- Make a decision within three seconds; otherwise kick it out
+- Keep your chest toward the basket when shooting
+- Operate from approximately 14–15 feet and in
+- Do not hold the ball at the three-point line
+- Move across from and opposite the ball
+
+Do not create a duplicate Chase athlete.
+
+After making the changes, run the app and confirm:
+
+- Multiple drill category filters can be selected
+- Category filters wrap instead of scrolling sideways
+- Player Rules work on athlete profiles
+- The bottom navigation order is correct
+- The drills were added to the correct categories
+- Existing athletes, drills, and sessions still work
+
+⏺ Big update — let me read the key files first, then tackle everything systematically.
+
+⏺ Read 2 files (ctrl+o to expand)
+
+⏺ Now let me check DrillForm for category list, and look at the existing migrations folder:
+
+⏺ Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ Got everything I need. This is a big update — let me run it all in one shot. Starting with the database migrations, then all the UI changes.
+
+⏺ Write(supabase/migrations/20260714000000_player_rules.sql)
+  ⎿  Wrote 15 lines to supabase/migrations/20260714000000_player_rules.sql
+       1 -- Player Rules table
+       2 CREATE TABLE IF NOT EXISTS player_rules (
+       3   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+       4   athlete_id uuid NOT NULL REFERENCES athletes(id) ON DELETE CASCADE,
+       5   rule text NOT NULL,
+       6   order_index integer NOT NULL DEFAULT 0,
+       7   created_at timestamptz DEFAULT now()
+       8 );
+       9
+      10 ALTER TABLE player_rules ENABLE ROW LEVEL SECURITY;
+     … +5 lines (ctrl+o to expand)
+
+⏺ Write(supabase/migrations/20260714000001_add_drills_and_chase_rules.sql)
+  ⎿  Wrote 153 lines to supabase/migrations/20260714000001_add_drills_and_chase_rules.sql
+       1 -- Add drills (skip duplicates by title)
+       2 INSERT INTO drills (title, category, difficulty)
+       3 SELECT title, category, 'intermediate' FROM (VALUES
+       4   -- Warm-Up
+       5   ('High Knees', 'warmup'),
+       6   ('Karaoke', 'warmup'),
+       7   ('Sumos', 'warmup'),
+       8   ('Lunge and Twist', 'warmup'),
+       9   ('Butt Kicks', 'warmup'),
+      10   ('Scoops', 'warmup'),
+     … +143 lines (ctrl+o to expand)
+
+⏺ Now all the UI changes in parallel:
+
+⏺ Update(src/components/Layout.jsx)
+  ⎿  Added 1 line, removed 1 line
+       4
+       5  const nav = [
+       6    { to: '/', label: 'Today' },
+       7 -  { to: '/athletes', label: 'Athletes' },
+       7    { to: '/drills', label: 'Drills' },
+       8    { to: '/sessions', label: 'Sessions' },
+       9 +  { to: '/athletes', label: 'Athletes' },
+      10    { to: '/intake', label: 'Intake' },
+      11  ]
+      12
+
+⏺ Write(src/pages/Drills.jsx)
+  ⎿  Added 49 lines, removed 23 lines
+       2  import { Link } from 'react-router-dom'
+       3  import { supabase } from '../lib/supabase'
+       4
+       5 -const CATEGORIES = ['all', 'ball handling', 'shooting', 'finishing', 'footwork', 'defense', 'strength & conditioning', 'IQ', 'warmup', 'recovery']
+       5 +const CATEGORIES = [
+       6 +  { value: 'all', label: 'All' },
+       7 +  { value: 'warmup', label: 'Warm-Up' },
+       8 +  { value: 'recovery', label: 'Recovery' },
+       9 +  { value: 'strength & conditioning', label: 'Strength & Conditioning' },
+      10 +  { value: 'defense', label: 'Defense' },
+      11 +  { value: 'footwork', label: 'Footwork' },
+      12 +  { value: 'finishing', label: 'Finishing' },
+      13 +  { value: 'shooting', label: 'Shooting' },
+      14 +  { value: 'ball handling', label: 'Ball Handling' },
+      15 +  { value: 'live action', label: 'Live Action' },
+      16 +]
+      17
+      18  const DIFF_COLORS = {
+      19    beginner: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400',
+     ...
+      23
+      24  export default function Drills() {
+      25    const [drills, setDrills] = useState([])
+      15 -  const [category, setCategory] = useState('all')
+      26 +  const [selectedCats, setSelectedCats] = useState([])
+      27    const [search, setSearch] = useState('')
+      28    const [loading, setLoading] = useState(true)
+      29
+     ...
+      34      })
+      35    }, [])
+      36
+      37 +  function toggleCategory(value) {
+      38 +    if (value === 'all') {
+      39 +      setSelectedCats([])
+      40 +      return
+      41 +    }
+      42 +    setSelectedCats(prev =>
+      43 +      prev.includes(value) ? prev.filter(c => c !== value) : [...prev, value]
+      44 +    )
+      45 +  }
+      46 +
+      47    const filtered = drills.filter(d => {
+      27 -    const matchCat = category === 'all' || d.category === category
+      48 +    const matchCat = selectedCats.length === 0 || selectedCats.includes(d.category)
+      49      const matchSearch = (d.title ?? '').toLowerCase().includes(search.toLowerCase())
+      50      return matchCat && matchSearch
+      51    })
+     ...
+       72          className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+       73        />
+       74
+       54 -      {/* Category filter */}
+       55 -      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none">
+       56 -        {CATEGORIES.map(c => (
+       57 -          <button
+       58 -            key={c}
+       59 -            onClick={() => setCategory(c)}
+       60 -            className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors capitalize ${
+       61 -              category === c
+       62 -                ? 'bg-blue-600 text-white'
+       63 -                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+       64 -            }`}
+       65 -          >
+       66 -            {c}
+       67 -          </button>
+       68 -        ))}
+       75 +      {/* Category filters — wrap onto multiple lines */}
+       76 +      <div className="flex flex-wrap gap-2 mb-4">
+       77 +        {CATEGORIES.map(({ value, label }) => {
+       78 +          const isActive = value === 'all' ? selectedCats.length === 0 : selectedCats.includes(value)
+       79 +          return (
+       80 +            <button
+       81 +              key={value}
+       82 +              onClick={() => toggleCategory(value)}
+       83 +              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+       84 +                isActive
+       85 +                  ? 'bg-blue-600 text-white'
+       86 +                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'
+       87 +              }`}
+       88 +            >
+       89 +              {label}
+       90 +            </button>
+       91 +          )
+       92 +        })}
+       93        </div>
+       94
+       95        {filtered.length === 0 ? (
+       96          <div className="text-center py-16 text-zinc-400 dark:text-zinc-600">
+       97            <div className="text-4xl mb-3">🏀</div>
+       74 -          <p className="font-medium">{search || category !== 'all' ? 'No results' : 'No drills yet'}</p>
+       75 -          {!search && category === 'all' && (
+       98 +          <p className="font-medium">{search || selectedCats.length > 0 ? 'No results' : 'No drills yet'}</p>
+       99 +          {!search && selectedCats.length === 0 && (
+      100              <p className="text-sm mt-1">
+      101                <Link to="/drills/new" className="text-blue-500 hover:underline">Add your first drill</Link>
+      102              </p>
+     ...
+      109                <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 px-4 py-3 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
+      110                  <div className="flex items-center justify-between mb-1">
+      111                    <p className="font-medium text-zinc-900 dark:text-zinc-100">{d.title}</p>
+       88 -                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${DIFF_COLORS[d.difficulty]}`}>
+       89 -                    {d.difficulty}
+       90 -                  </span>
+      112 +                  {d.difficulty && (
+      113 +                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${DIFF_COLORS[d.difficulty]}`}>
+      114 +                      {d.difficulty}
+      115 +                    </span>
+      116 +                  )}
+      117                  </div>
+      118                  <div className="flex items-center gap-2">
+      119                    <span className="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded-full capitalize">
+
+⏺ Now add 'live action' to DrillForm categories and update AthletePublicView:
+
+⏺ Update(src/pages/DrillForm.jsx)
+  ⎿  Added 1 line, removed 1 line
+      112                <select required value={form.category} onChange={set('category')}
+      113                  className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      114                  <option value="">Select</option>
+      115 -                {['ball handling','shooting','finishing','footwork','defense','strength & conditioning','IQ','warmup','recovery'].map(c => (
+      115 +                {['warmup','recovery','strength & conditioning','defense','footwork','finishing','shooting','ball handling','live action'].map(c => (
+      116                    <option key={c} value={c}>{c}</option>
+      117                  ))}
+      118                </select>
+
+⏺ Update(src/pages/AthletePublicView.jsx)
+  ⎿  Added 10 lines, removed 9 lines
+       3  import { supabase } from '../lib/supabase'
+       4
+       5  const CATEGORY_ORDER = [
+       6 -  'warmup', 'ball handling', 'shooting', 'finishing',
+       7 -  'footwork', 'defense', 'IQ', 'strength & conditioning', 'recovery',
+       6 +  'warmup', 'recovery', 'strength & conditioning', 'defense',
+       7 +  'footwork', 'finishing', 'shooting', 'ball handling', 'live action', 'IQ',
+       8  ]
+       9
+      10  const CATEGORY_LABELS = {
+      11 -  'ball handling':          'Ball Handling',
+      12 -  'shooting':               'Shooting',
+      13 -  'finishing':              'Finishing',
+      14 -  'footwork':               'Footwork',
+      15 -  'defense':                'Defense',
+      11 +  'warmup':                 'Warm-Up',
+      12 +  'recovery':               'Recovery',
+      13    'strength & conditioning':'Strength & Conditioning',
+      14 +  'defense':                'Defense',
+      15 +  'footwork':               'Footwork',
+      16 +  'finishing':              'Finishing',
+      17 +  'shooting':               'Shooting',
+      18 +  'ball handling':          'Ball Handling',
+      19 +  'live action':            'Live Action',
+      20    'IQ':                     'Basketball IQ',
+      18 -  'warmup':                 'Warmup',
+      19 -  'recovery':               'Recovery',
+      21  }
+      22
+      23  export default function AthletePublicView() {
+
+⏺ Now remove Apple Calendar button on non-iOS in Sessions.jsx and SessionDetail.jsx:
+
+⏺ Update(src/pages/Sessions.jsx)
+  ⎿  Added 2 lines
+      2  import { Link } from 'react-router-dom'
+      3  import { supabase } from '../lib/supabase'
+      4
+      5 +const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      6 +
+      7  export default function Sessions() {
+      8    const [sessions, setSessions] = useState([])
+      9    const [loading, setLoading] = useState(true)
+
+⏺ Update(src/pages/Sessions.jsx)
+  ⎿  Added 8 lines, removed 6 lines
+      84                      </Link>
+      85                      {s.start_time && (
+      86                        <div className="flex gap-2 px-4 pb-3 border-t border-zinc-100 dark:border-zinc-800 pt-2">
+      87 -                        <button
+      88 -                          onClick={() => openAppleCalendar(s)}
+      89 -                          className="flex-1 text-xs py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+      90 -                        >
+      91 -                          📅 Apple Calendar
+      92 -                        </button>
+      87 +                        {IS_IOS && (
+      88 +                          <button
+      89 +                            onClick={() => openAppleCalendar(s)}
+      90 +                            className="flex-1 text-xs py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+      91 +                          >
+      92 +                            📅 Apple Calendar
+      93 +                          </button>
+      94 +                        )}
+      95                          <a
+      96                            href={googleCalendarURL(s)}
+      97                            target="_blank"
+
+⏺ Update(src/pages/SessionDetail.jsx)
+  ⎿  Added 2 lines
+      18  import { CSS } from '@dnd-kit/utilities'
+      19  import { supabase } from '../lib/supabase'
+      20
+      21 +const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+      22 +
+      23  export default function SessionDetail() {
+      24    const { id } = useParams()
+      25    const navigate = useNavigate()
+
+⏺ Update(src/pages/SessionDetail.jsx)
+  ⎿  Added 8 lines, removed 6 lines
+      208
+      209          {session.start_time && (
+      210            <div className="flex gap-2 mt-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+      211 -            <button
+      212 -              onClick={() => openAppleCalendar(session)}
+      213 -              className="flex-1 text-xs py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+      214 -            >
+      215 -              📅 Apple Calendar
+      216 -            </button>
+      211 +            {IS_IOS && (
+      212 +              <button
+      213 +                onClick={() => openAppleCalendar(session)}
+      214 +                className="flex-1 text-xs py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+      215 +              >
+      216 +                📅 Apple Calendar
+      217 +              </button>
+      218 +            )}
+      219              <a
+      220                href={googleCalendarURL(session)}
+      221                target="_blank"
+
+⏺ Now the big one — Player Rules in AthleteDetail.jsx:
+
+⏺ Update(src/pages/AthleteDetail.jsx)
+  ⎿  Added 41 lines
+       2  import { Link, useParams } from 'react-router-dom'
+       3  import { supabase } from '../lib/supabase'
+       4
+       5 +function usePlayerRules(athleteId) {
+       6 +  const [rules, setRules] = useState([])
+       7 +
+       8 +  useEffect(() => {
+       9 +    supabase.from('player_rules').select('*').eq('athlete_id', athleteId).order('order_index')
+      10 +      .then(({ data }) => setRules(data ?? []))
+      11 +  }, [athleteId])
+      12 +
+      13 +  async function addRule(text) {
+      14 +    const { data } = await supabase.from('player_rules')
+      15 +      .insert({ athlete_id: athleteId, rule: text, order_index: rules.length })
+      16 +      .select().single()
+      17 +    if (data) setRules(prev => [...prev, data])
+      18 +  }
+      19 +
+      20 +  async function updateRule(id, text) {
+      21 +    await supabase.from('player_rules').update({ rule: text }).eq('id', id)
+      22 +    setRules(prev => prev.map(r => r.id === id ? { ...r, rule: text } : r))
+      23 +  }
+      24 +
+      25 +  async function deleteRule(id) {
+      26 +    await supabase.from('player_rules').delete().eq('id', id)
+      27 +    setRules(prev => prev.filter(r => r.id !== id))
+      28 +  }
+      29 +
+      30 +  async function moveRule(id, direction) {
+      31 +    const idx = rules.findIndex(r => r.id === id)
+      32 +    const swapIdx = idx + direction
+      33 +    if (swapIdx < 0 || swapIdx >= rules.length) return
+      34 +    const reordered = [...rules]
+      35 +    ;[reordered[idx], reordered[swapIdx]] = [reordered[swapIdx], reordered[idx]]
+      36 +    setRules(reordered)
+      37 +    await Promise.all([
+      38 +      supabase.from('player_rules').update({ order_index: swapIdx }).eq('id', reordered[swapIdx].id),
+      39 +      supabase.from('player_rules').update({ order_index: idx }).eq('id', reordered[idx].id),
+      40 +    ])
+      41 +  }
+      42 +
+      43 +  return { rules, addRule, updateRule, deleteRule, moveRule }
+      44 +}
+      45 +
+      46  const SKILL_COLORS = {
+      47    beginner: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400',
+      48    intermediate: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400',
+
+⏺ Now add the Player Rules section into the JSX, right after the Development section:
+
+⏺ Update(src/pages/AthleteDetail.jsx)
+  ⎿  Added 1 line
+      52  export default function AthleteDetail() {
+      53    const { id } = useParams()
+      54    const [athlete, setAthlete] = useState(null)
+      55 +  const { rules, addRule, updateRule, deleteRule, moveRule } = usePlayerRules(id)
+      56    const [upcomingSessions, setUpcomingSessions] = useState([])
+      57    const [pastSessions, setPastSessions] = useState([])
+      58    const [totalSessions, setTotalSessions] = useState(0)
+
+⏺ Now add the Player Rules UI section after the Development section:
+
+⏺ Update(src/pages/AthleteDetail.jsx)
+  ⎿  Added 3 lines
+      172          </div>
+      173        )}
+      174
+      175 +      {/* Player Rules */}
+      176 +      <PlayerRules rules={rules} onAdd={addRule} onUpdate={updateRule} onDelete={deleteRule} onMove={moveRule} />
+      177 +
+      178        {/* Upcoming sessions */}
+      179        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
+      180          <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Upcoming Sessions</h2>
+
+⏺ Now add the PlayerRules component before the helper functions at the bottom of the file:
+
+⏺ Update(src/pages/AthleteDetail.jsx)
+  ⎿  Added 89 lines
+      220    )
+      221  }
+      222
+      223 +function PlayerRules({ rules, onAdd, onUpdate, onDelete, onMove }) {
+      224 +  const [newRule, setNewRule] = useState('')
+      225 +  const [editingId, setEditingId] = useState(null)
+      226 +  const [editText, setEditText] = useState('')
+      227 +
+      228 +  async function handleAdd() {
+      229 +    const text = newRule.trim()
+      230 +    if (!text) return
+      231 +    await onAdd(text)
+      232 +    setNewRule('')
+      233 +  }
+      234 +
+      235 +  function startEdit(rule) {
+      236 +    setEditingId(rule.id)
+      237 +    setEditText(rule.rule)
+      238 +  }
+      239 +
+      240 +  async function saveEdit(id) {
+      241 +    const text = editText.trim()
+      242 +    if (text) await onUpdate(id, text)
+      243 +    setEditingId(null)
+      244 +  }
+      245 +
+      246 +  return (
+      247 +    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
+      248 +      <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Player Rules</h2>
+      249 +
+      250 +      {rules.length > 0 && (
+      251 +        <div className="space-y-2 mb-3">
+      252 +          {rules.map((r, i) => (
+      253 +            <div key={r.id} className="flex items-start gap-2 group">
+      254 +              <div className="flex flex-col gap-0.5 pt-0.5 flex-shrink-0">
+      255 +                <button
+      256 +                  onClick={() => onMove(r.id, -1)}
+      257 +                  disabled={i === 0}
+      258 +                  className="text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 disabled:opacity-20 text-xs leading-none"
+      259 +                >▲</button>
+      260 +                <button
+      261 +                  onClick={() => onMove(r.id, 1)}
+      262 +                  disabled={i === rules.length - 1}
+      263 +                  className="text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 disabled:opacity-20 text-xs leading-none"
+      264 +                >▼</button>
+      265 +              </div>
+      266 +              <span className="text-zinc-400 text-sm mt-0.5 flex-shrink-0">{i + 1}.</span>
+      267 +              {editingId === r.id ? (
+      268 +                <div className="flex-1 flex gap-2">
+      269 +                  <input
+      270 +                    value={editText}
+      271 +                    onChange={e => setEditText(e.target.value)}
+      272 +                    onKeyDown={e => { if (e.key === 'Enter') saveEdit(r.id); if (e.key === 'Escape') setEditingId(null) }}
+      273 +                    autoFocus
+      274 +                    className="flex-1 text-sm px-2 py-1 rounded-lg border border-blue-400 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none"
+      275 +                  />
+      276 +                  <button onClick={() => saveEdit(r.id)} className="text-xs text-blue-500 font-medium">Save</button>
+      277 +                  <button onClick={() => setEditingId(null)} className="text-xs text-zinc-400">Cancel</button>
+      278 +                </div>
+      279 +              ) : (
+      280 +                <div className="flex-1 flex items-start justify-between gap-2">
+      281 +                  <p className="text-sm text-zinc-700 dark:text-zinc-300">{r.rule}</p>
+      282 +                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+      283 +                    <button onClick={() => startEdit(r)} className="text-xs text-blue-500">Edit</button>
+      284 +                    <button onClick={() => onDelete(r.id)} className="text-xs text-red-400">✕</button>
+      285 +                  </div>
+      286 +                </div>
+      287 +              )}
+      288 +            </div>
+      289 +          ))}
+      290 +        </div>
+      291 +      )}
+      292 +
+      293 +      <div className="flex gap-2">
+      294 +        <input
+      295 +          value={newRule}
+      296 +          onChange={e => setNewRule(e.target.value)}
+      297 +          onKeyDown={e => { if (e.key === 'Enter') handleAdd() }}
+      298 +          placeholder="Add a rule..."
+      299 +          className="flex-1 text-sm px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      300 +        />
+      301 +        <button
+      302 +          onClick={handleAdd}
+      303 +          className="text-sm px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+      304 +        >
+      305 +          Add
+      306 +        </button>
+      307 +      </div>
+      308 +    </div>
+      309 +  )
+      310 +}
+      311 +
+      312  function SessionPackBar({ used, purchased }) {
+      313    const pct = Math.min(Math.round((used / purchased) * 100), 100)
+      314    const remaining = Math.max(purchased - used, 0)
+
+⏺ Now run migrations and push everything:
+
+⏺ Bash(npm run build 2>&1 | tail -10)
+  ⎿  computing gzip size...
+     dist/index.html                   0.64 kB │ gzip:   0.36 kB
+     dist/assets/index-DfsWzhUl.css   22.41 kB │ gzip:   4.47 kB
+     … +7 lines (ctrl+o to expand)
+
+⏺ Build passes. Now push migrations and run them:
+
+⏺ Bash(supabase db push --linked 2>&1)
+  ⎿  Error: Exit code 1
+     Initialising login role...
+     Connecting to remote database...
+     Do you want to push these migrations to the remote database?
+      • 20260714000000_player_rules.sql
+      • 20260714000001_add_drills_and_chase_rules.sql
+
+      [Y/n]
+     Applying migration 20260714000000_player_rules.sql...
+     Applying migration 20260714000001_add_drills_and_chase_rules.sql...
+     … +63 lines (ctrl+o to see all)
+
+⏺ The drills table has a CHECK constraint on category — I need to add 'live action' to it. Let me check the init migration:
+
+⏺ Searched for 1 pattern, read 1 file (ctrl+o to expand)
+
+⏺ Need to add 'live action' to the constraint. I'll prepend that to the drills migration:
+
+⏺ Update(supabase/migrations/20260714000001_add_drills_and_chase_rules.sql)
+  ⎿  Added 5 lines
+      1 +-- Expand category constraint to include 'live action'
+      2 +ALTER TABLE drills DROP CONSTRAINT IF EXISTS drills_category_check;
+      3 +ALTER TABLE drills ADD CONSTRAINT drills_category_check
+      4 +  CHECK (category IN ('ball handling','shooting','finishing','footwork','defense','strength & conditioning','IQ','warmup','recovery','live action'));
+      5 +
+      6  -- Add drills (skip duplicates by title)
+      7  INSERT INTO drills (title, category, difficulty)
+      8  SELECT title, category, 'intermediate' FROM (VALUES
+
+⏺ Bash(supabase db push --linked 2>&1)
+  ⎿  Initialising login role...
+     Connecting to remote database...
+     Do you want to push these migrations to the remote database?
+     … +7 lines (ctrl+o to expand)
+
+⏺ Migrations applied. Now commit and push everything:
+
+⏺ Bash(git add -A && git commit -m "$(cat <<'EOF'
+      Session 4: multi-select drill filters, player rules, nav reorder, drill library, calendar fixes…)
+  ⎿  [main bb5746e] Session 4: multi-select drill filters, player rules, nav reorder, drill library, calendar fixes
+      9 files changed, 388 insertions(+), 46 deletions(-)
+      create mode 100644 supabase/migrations/20260714000000_player_rules.sql
+     … +3 lines (ctrl+o to expand)
+
+⏺ Done. Here's everything that shipped:
+
+  Done:
+  - Drill filters — Multi-select, OR logic, All clears selection, filters wrap onto multiple lines, Live Action added
+  - Nav order — Today → Drills → Sessions → Athletes → Intake
+  - Player Rules — Add, edit (tap Edit / Enter to save), delete (✕), reorder (▲▼ arrows) on every athlete profile, positioned after Development section
+  - Chase's rules — Seeded automatically via migration
+  - 112 drills added across Warm-Up, Recovery, S&C, Defense, Footwork, Finishing, Shooting, Ball Handling, and Live Action
+  - Apple Calendar — Hidden on desktop, shows only on iPhone
+  - DrillForm — Updated category dropdown to match new list
+
+  Netlify is deploying now. Once live, Chase's profile will already have his 6 rules pre-loaded.
+
+✻ Baked for 6m 58s
+
+❯ For the, uh, play... the, uh, parent player link, allow them to see the, like, strength and weaknesses development thing. Um, any notes that we put on the kid's profile have that always update on that link for that individual kid. Uh, the
+upcoming sessions and then the prior sessions.
+
+⏺ The parent view is missing strengths, weaknesses, notes, and past sessions. Let me add all of that now:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Update(src/pages/AthletePublicView.jsx)
+  ⎿  Added 16 lines, removed 4 lines
+      23  export default function AthletePublicView() {
+      24    const { token } = useParams()
+      25    const [athlete, setAthlete] = useState(null)
+      26 -  const [sessions, setSessions] = useState([])
+      26 +  const [upcoming, setUpcoming] = useState([])
+      27 +  const [past, setPast] = useState([])
+      28    const [notFound, setNotFound] = useState(false)
+      29    const [expanded, setExpanded] = useState(new Set())
+      30
+     ...
+      39        if (!a) { setNotFound(true); return }
+      40        setAthlete(a)
+      41
+      41 -      const { data: s } = await supabase
+      42 +      const today = new Date().toISOString().split('T')[0]
+      43 +
+      44 +      const { data: up } = await supabase
+      45          .from('sessions')
+      46          .select('*, session_athletes!inner(athlete_id), session_drills(*, drill:drills(title, category, description))')
+      47          .eq('session_athletes.athlete_id', a.id)
+      45 -        .gte('session_date', new Date().toISOString().split('T')[0])
+      48 +        .gte('session_date', today)
+      49          .order('session_date')
+      50          .limit(10)
+      48 -      setSessions(s ?? [])
+      51 +      setUpcoming(up ?? [])
+      52 +
+      53 +      const { data: prev } = await supabase
+      54 +        .from('sessions')
+      55 +        .select('*, session_athletes!inner(athlete_id), session_drills(*, drill:drills(title, category, description))')
+      56 +        .eq('session_athletes.athlete_id', a.id)
+      57 +        .lt('session_date', today)
+      58 +        .order('session_date', { ascending: false })
+      59 +        .limit(20)
+      60 +      setPast(prev ?? [])
+      61      }
+      62      load()
+      63    }, [token])
+
+⏺ Now update the JSX — add development section and past sessions, fix sessions references to upcoming:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Update(src/pages/AthletePublicView.jsx)
+  ⎿  Added 8 lines, removed 5 lines
+      106            </p>
+      107          </div>
+      108
+      109 -        {/* Goals */}
+      110 -        {athlete.goals && (
+      111 -          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
+      112 -            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">Goals</h2>
+      113 -            <p className="text-sm text-zinc-700 dark:text-zinc-300">{athlete.goals}</p>
+      109 +        {/* Development */}
+      110 +        {(athlete.goals || athlete.strengths || athlete.weaknesses || athlete.notes) && (
+      111 +          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4 space-y-3">
+      112 +            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide">Development</h2>
+      113 +            {athlete.goals && <DevItem label="Goals" value={athlete.goals} />}
+      114 +            {athlete.strengths && <DevItem label="Strengths" value={athlete.strengths} />}
+      115 +            {athlete.weaknesses && <DevItem label="Areas to Improve" value={athlete.weaknesses} />}
+      116 +            {athlete.notes && <DevItem label="Notes" value={athlete.notes} />}
+      117            </div>
+      118          )}
+      119
+
+⏺ Now fix sessions → upcoming in the upcoming sessions section, and add the past sessions + bulk export fix:
+
+⏺ Update(src/pages/AthletePublicView.jsx)
+  ⎿  Added 2 lines, removed 2 lines
+      140          <div className="space-y-3">
+      141            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide px-1">Upcoming Sessions</h2>
+      142
+      143 -          {sessions.length === 0 ? (
+      143 +          {upcoming.length === 0 ? (
+      144              <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 text-center">
+      145                <p className="text-sm text-zinc-400">No upcoming sessions scheduled</p>
+      146              </div>
+      147            ) : (
+      148 -            sessions.map(s => {
+      148 +            upcoming.map(s => {
+      149                const isOpen = expanded.has(s.id)
+      150                const drills = [...(s.session_drills ?? [])].sort((a, b) => a.order_index - b.order_index)
+      151                const grouped = groupByCategory(drills)
+
+⏺ Now fix the bulk calendar export (still references sessions) and add past sessions section after it:
+
+⏺ Read 1 file (ctrl+o to expand)
+
+⏺ Update(src/pages/AthletePublicView.jsx)
+  ⎿  Added 53 lines, removed 2 lines
+      238          </div>
+      239
+      240          {/* Bulk calendar export */}
+      241 -        {sessions.filter(s => s.start_time).length > 1 && (
+      241 +        {upcoming.filter(s => s.start_time).length > 1 && (
+      242            <button
+      243 -            onClick={() => openAllAppleCalendar(sessions, athleteName)}
+      243 +            onClick={() => openAllAppleCalendar(upcoming, athleteName)}
+      244              className="w-full mt-2 py-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 text-sm text-zinc-500 dark:text-zinc-400 hover:bg-white dark:hover:bg-zinc-900 transition-colors"
+      245            >
+      246              📅 Add all to Apple Calendar
+      247            </button>
+      248          )}
+      249
+      250 +        {/* Past sessions */}
+      251 +        {past.length > 0 && (
+      252 +          <div className="space-y-3 mt-6">
+      253 +            <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-wide px-1">Session History</h2>
+      254 +            {past.map(s => {
+      255 +              const isOpen = expanded.has(s.id)
+      256 +              const drills = [...(s.session_drills ?? [])].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+      257 +              const grouped = groupByCategory(drills)
+      258 +              const dateLabel = formatDate(s.session_date)
+      259 +
+      260 +              return (
+      261 +                <div key={s.id} className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden opacity-75">
+      262 +                  <button
+      263 +                    onClick={() => toggleExpand(s.id)}
+      264 +                    className="w-full text-left px-4 py-4 flex items-start justify-between gap-3"
+      265 +                  >
+      266 +                    <div className="flex-1 min-w-0">
+      267 +                      <p className="font-semibold text-zinc-900 dark:text-zinc-100 truncate">{s.session_title}</p>
+      268 +                      <p className="text-xs text-zinc-400 mt-0.5">{dateLabel}</p>
+      269 +                    </div>
+      270 +                    <span className="text-zinc-400 text-sm mt-0.5 flex-shrink-0">{isOpen ? '▲' : '▼'}</span>
+      271 +                  </button>
+      272 +                  {isOpen && (
+      273 +                    <div className="border-t border-zinc-100 dark:border-zinc-800 px-4 pt-4 pb-5 space-y-4">
+      274 +                      {grouped.length === 0 ? (
+      275 +                        <p className="text-sm text-zinc-400">No drills recorded</p>
+      276 +                      ) : (
+      277 +                        grouped.map(({ category, drills: catDrills }) => (
+      278 +                          <div key={category}>
+      279 +                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wide mb-2">
+      280 +                              {CATEGORY_LABELS[category] ?? category}
+      281 +                            </p>
+      282 +                            <div className="space-y-1">
+      283 +                              {catDrills.map(sd => (
+      284 +                                <div key={sd.id} className="flex gap-2">
+      285 +                                  <span className="text-blue-400 mt-0.5 flex-shrink-0">•</span>
+      286 +                                  <span className="text-sm text-zinc-700 dark:text-zinc-300">{sd.drill?.title}</span>
+      287 +                                </div>
+      288 +                              ))}
+      289 +                            </div>
+      290 +                          </div>
+      291 +                        ))
+      292 +                      )}
+      293 +                    </div>
+      294 +                  )}
+      295 +                </div>
+      296 +              )
+      297 +            })}
+      298 +          </div>
+      299 +        )}
+      300 +
+      301          <p className="text-center text-xs text-zinc-300 dark:text-zinc-700 mt-8">
+      302            Powered by CourtFlow
+      303          </p>
+
+⏺ Now add the DevItem helper component at the bottom:
+
+⏺ Update(src/pages/AthletePublicView.jsx)
+  ⎿  Added 11 lines
+      306    )
+      307  }
+      308
+      309 +// ─── Components ───────────────────────────────────────────────────────────────
+      310 +
+      311 +function DevItem({ label, value }) {
+      312 +  return (
+      313 +    <div>
+      314 +      <p className="text-xs text-zinc-400 dark:text-zinc-500 mb-0.5">{label}</p>
+      315 +      <p className="text-sm text-zinc-700 dark:text-zinc-300">{value}</p>
+      316 +    </div>
+      317 +  )
+      318 +}
+      319 +
+      320  // ─── Helpers ─────────────────────────────────────────────────────────────────
+      321
+      322  function groupByCategory(drills) {
+
+⏺ Bash(npm run build 2>&1 | tail -8)
+  ⎿  dist/assets/index-mfxgvMPA.css   22.46 kB │ gzip:   4.48 kB
+     dist/assets/index-B8YJFucV.js   581.08 kB │ gzip: 163.33 kB
+     … +5 lines (ctrl+o to expand)
+
+⏺ Bash(git add src/pages/AthletePublicView.jsx && git commit -m "$(cat <<'EOF'
+      Parent view: add development section, past sessions, fix sessions ref…)
+  ⎿  [main 4261216] Parent view: add development section, past sessions, fix sessions ref
+      1 file changed, 90 insertions(+), 13 deletions(-)
+     To https://github.com/amielterry26/courtflow.git
+        bb5746e..4261216  main -> main
+
+⏺ Pushed. The parent view now shows:
+
+  - Development — Goals, Strengths, Areas to Improve, Notes (all pulled live from the athlete profile, always up to date)
+  - Upcoming Sessions — expandable with drills by category + calendar buttons (unchanged)
+  - Session History — past sessions expandable with drill breakdown, shown below upcoming
+
+  Any time you update the athlete's profile (goals, strengths, weaknesses, notes), it reflects instantly on the parent link.
+
+✻ Crunched for 1m 34s
+
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ [Pasted text #32 +167 lines]
+   dfgbs
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  true                                                                                                                                                                                                                        7% until auto-compact
+  ~/Desktop/Coding/git/apps/courtflow \033[1;34m[git:main]\033[0m \033[0;32m✔\033[0m \033[0;36mSonnet 4.6\033[0m \033[0;33mctx:77%\033[0m                                                           Update available! Run: brew upgrade claude-code
+  ⏵⏵ accept edits on (shift+tab to cycle)
+
+

@@ -11,6 +11,7 @@ import AthleteDetail from './pages/AthleteDetail'
 import AthleteForm from './pages/AthleteForm'
 import Drills from './pages/Drills'
 import DrillForm from './pages/DrillForm'
+import DrillDetail from './pages/DrillDetail'
 import Sessions from './pages/Sessions'
 import SessionDetail from './pages/SessionDetail'
 import SessionForm from './pages/SessionForm'
@@ -45,7 +46,8 @@ function App() {
 
                     <Route path="/drills" element={<Drills />} />
                     <Route path="/drills/new" element={<DrillForm />} />
-                    <Route path="/drills/:id" element={<DrillForm />} />
+                    <Route path="/drills/:id" element={<DrillDetail />} />
+                    <Route path="/drills/:id/edit" element={<DrillForm />} />
 
                     <Route path="/sessions" element={<Sessions />} />
                     <Route path="/sessions/new" element={<SessionForm />} />

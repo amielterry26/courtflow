@@ -97,17 +97,19 @@ export default function AthleteDetail() {
 
   if (!athlete) return <div className="flex items-center justify-center py-20 text-zinc-400 text-sm">Loading...</div>
 
+  const hasDevelopment = athlete.goals || athlete.strengths || athlete.weaknesses || athlete.notes
+
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-5">
         <Link to="/athletes" className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">← Back</Link>
       </div>
 
-      {/* Header */}
+      {/* Header card */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-5 mb-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg">
+            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg flex-shrink-0">
               {athlete.first_name?.[0] ?? '?'}{athlete.last_name?.[0] ?? ''}
             </div>
             <div>
@@ -118,18 +120,49 @@ export default function AthleteDetail() {
                 {[athlete.position, athlete.school].filter(Boolean).join(' · ')}
               </p>
               {totalSessions > 0 && (
-                <p className="text-xs text-zinc-400 mt-0.5">{totalSessions} total session{totalSessions !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-zinc-400 mt-0.5">{totalSessions} session{totalSessions !== 1 ? 's' : ''}</p>
               )}
             </div>
           </div>
-          <Link to={`/athletes/${id}/edit`} className="text-sm text-blue-600 dark:text-blue-400 font-medium">Edit</Link>
+          <Link to={`/athletes/${id}/edit`} className="text-sm text-blue-600 dark:text-blue-400 font-medium flex-shrink-0">Edit</Link>
         </div>
 
-        {athlete.skill_level && (
-          <span className={`text-xs px-2 py-1 rounded-full font-medium ${SKILL_COLORS[athlete.skill_level]}`}>
-            {athlete.skill_level}
-          </span>
+        {/* Parent contact — always visible */}
+        {(athlete.parent_name || athlete.parent_phone || athlete.parent_email) && (
+          <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 mb-3 space-y-1.5">
+            {athlete.parent_name && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-400 w-14 flex-shrink-0">Parent</span>
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">{athlete.parent_name}</span>
+              </div>
+            )}
+            {athlete.parent_phone && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-400 w-14 flex-shrink-0">Phone</span>
+                <a href={`tel:${athlete.parent_phone}`} className="text-sm text-blue-600 dark:text-blue-400">{athlete.parent_phone}</a>
+              </div>
+            )}
+            {athlete.parent_email && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-400 w-14 flex-shrink-0">Email</span>
+                <a href={`mailto:${athlete.parent_email}`} className="text-sm text-blue-600 dark:text-blue-400 truncate">{athlete.parent_email}</a>
+              </div>
+            )}
+          </div>
         )}
+
+        <div className="flex items-center gap-2">
+          {athlete.skill_level && (
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${SKILL_COLORS[athlete.skill_level]}`}>
+              {athlete.skill_level}
+            </span>
+          )}
+          {athlete.gender && (
+            <span className="text-xs px-2 py-1 rounded-full font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400">
+              {athlete.gender}
+            </span>
+          )}
+        </div>
 
         <button
           onClick={copyShareLink}
@@ -139,19 +172,16 @@ export default function AthleteDetail() {
         </button>
       </div>
 
-      {/* Info grid */}
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4 space-y-3">
-        <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Info</h2>
+      {/* Info grid — collapsible */}
+      <Collapsible title="Info" defaultOpen>
         <Grid>
           <InfoItem label="Age" value={athlete.age} />
           <InfoItem label="Grade" value={athlete.grade} />
           <InfoItem label="Team" value={athlete.team} />
+          <InfoItem label="Gender" value={athlete.gender} />
           <InfoItem label="Fav player" value={athlete.favorite_player} />
-          <InfoItem label="Parent" value={athlete.parent_name} />
-          <InfoItem label="Phone" value={athlete.parent_phone} />
-          <InfoItem label="Email" value={athlete.parent_email} span />
         </Grid>
-      </div>
+      </Collapsible>
 
       {/* Session Pack */}
       {athlete.sessions_purchased > 0 && (
@@ -161,19 +191,22 @@ export default function AthleteDetail() {
         </div>
       )}
 
-      {/* Development */}
-      {(athlete.goals || athlete.strengths || athlete.weaknesses || athlete.notes) && (
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4 space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Development</h2>
-          <InfoItem label="Goals" value={athlete.goals} />
-          <InfoItem label="Strengths" value={athlete.strengths} />
-          <InfoItem label="Weaknesses" value={athlete.weaknesses} />
-          <InfoItem label="Notes" value={athlete.notes} />
-        </div>
+      {/* Development — collapsible, open by default */}
+      {hasDevelopment && (
+        <Collapsible title="Development" defaultOpen>
+          <div className="space-y-3">
+            <InfoItem label="Goals" value={athlete.goals} />
+            <InfoItem label="Strengths" value={athlete.strengths} />
+            <InfoItem label="Weaknesses" value={athlete.weaknesses} />
+            <InfoItem label="Notes" value={athlete.notes} />
+          </div>
+        </Collapsible>
       )}
 
-      {/* Player Rules */}
-      <PlayerRules rules={rules} onAdd={addRule} onUpdate={updateRule} onDelete={deleteRule} onMove={moveRule} />
+      {/* Player Rules — collapsible */}
+      <CollapsibleRules title="Player Rules" defaultOpen>
+        <PlayerRules rules={rules} onAdd={addRule} onUpdate={updateRule} onDelete={deleteRule} onMove={moveRule} />
+      </CollapsibleRules>
 
       {/* Upcoming sessions */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
@@ -199,8 +232,7 @@ export default function AthleteDetail() {
 
       {/* Past sessions */}
       {pastSessions.length > 0 && (
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4">
-          <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Session History</h2>
+        <Collapsible title={`Session History (${pastSessions.length})`} defaultOpen={false}>
           <div className="space-y-2">
             {pastSessions.map(s => (
               <Link key={s.id} to={`/sessions/${s.id}`} className="block">
@@ -214,11 +246,47 @@ export default function AthleteDetail() {
               </Link>
             ))}
           </div>
-        </div>
+        </Collapsible>
       )}
     </div>
   )
 }
+
+// ─── Collapsible wrapper ──────────────────────────────────────────────────────
+
+function Collapsible({ title, defaultOpen = true, children }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 mb-4 overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
+      >
+        <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{title}</h2>
+        <span className="text-zinc-400 text-xs">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && <div className="px-4 pb-4 space-y-3">{children}</div>}
+    </div>
+  )
+}
+
+function CollapsibleRules({ title, defaultOpen = true, children }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 mb-4 overflow-hidden">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
+      >
+        <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{title}</h2>
+        <span className="text-zinc-400 text-xs">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && <div className="px-4 pb-4">{children}</div>}
+    </div>
+  )
+}
+
+// ─── Player Rules ─────────────────────────────────────────────────────────────
 
 function PlayerRules({ rules, onAdd, onUpdate, onDelete, onMove }) {
   const [newRule, setNewRule] = useState('')
@@ -244,9 +312,7 @@ function PlayerRules({ rules, onAdd, onUpdate, onDelete, onMove }) {
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 mb-4">
-      <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-3">Player Rules</h2>
-
+    <div>
       {rules.length > 0 && (
         <div className="space-y-2 mb-3">
           {rules.map((r, i) => (
@@ -308,6 +374,8 @@ function PlayerRules({ rules, onAdd, onUpdate, onDelete, onMove }) {
     </div>
   )
 }
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
 function SessionPackBar({ used, purchased }) {
   const pct = Math.min(Math.round((used / purchased) * 100), 100)
