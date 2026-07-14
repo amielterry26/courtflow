@@ -1,333 +1,462 @@
 # CourtFlow — Agent Handoff Document
+**Last updated: 2026-07-13 | Current session: 6 | Commit: `77c2eed`**
 
-> **For any agent reading this:** You are picking up an active project mid-build. Read this entire document before doing anything. You have permission to ask clarifying questions or do a full logic pass before touching code. This document is the single source of truth for context, decisions, and current state. If something is unclear, ask Amiel — he communicates via voice notes (stream-of-consciousness), so read through and pull out the intent.
-
----
-
-## What Is CourtFlow?
-
-CourtFlow is a **mobile-first basketball training web app** built for two trainers — **Amiel Terry** and **Derek** (Mason & Terry Training). It is not a commercial product. It is an internal tool they use courtside from their phones to manage athletes, build training sessions, and track workouts.
-
-The vibe: fast, simple, no fluff. Built to be used on an iPhone while standing on a basketball court. Every UI decision should reflect that. Simple > clever. Mobile first, always.
+> **For any agent reading this:** You are picking up an active, evolving project. Read this entire document before touching any code. You have explicit permission to ask clarifying questions or run a full logic pass before making changes. This is the single source of truth for context, decisions, architecture, and current state.
 
 ---
 
-## The People
+## 1. What Is CourtFlow?
 
-| Person | Role |
-|--------|------|
-| Amiel Terry | Lead trainer, product owner, primary user (`amielterry.dev@gmail.com`) |
-| Derek | Co-trainer, secondary user |
-| Parents | View-only — see their kid's profile and upcoming sessions via shareable link |
+CourtFlow is a **mobile-first internal basketball training web app** for two trainers — **Amiel Terry** and **Derek** at Mason & Terry Training. It is **not** a commercial product. It is a personal internal tool built to be used **courtside on an iPhone** during actual training sessions.
 
----
+**The vibe:** Fast, clean, no fluff. Simple > clever. Every UI decision should start with "how does this feel on a phone?" The app needs to work in one hand while Amiel is watching an athlete drill.
 
-## Tech Stack
+### The People
 
-| Layer | Tool |
-|-------|------|
-| Frontend | React + Vite 5 |
-| Routing | React Router v6 |
-| Styling | Tailwind CSS v3 (dark mode via `class` strategy) |
-| Backend / DB / Auth | Supabase (Mason & Terry Training project) |
-| Drag & Drop | @dnd-kit/core, @dnd-kit/sortable, @dnd-kit/utilities |
-| Email notifications | Web3Forms (client-side fetch, no SDK) |
-| Deployment | Netlify (manual drag-and-drop of `dist/` for now) |
-| Node version | v20.13.1 |
-
-**CRITICAL — Do NOT upgrade:**
-- Vite past v5 (Vite 6/7/8 breaks on Node 20.13.1)
-- Tailwind past v3 (v4 uses `@tailwindcss/vite` which needs newer Node)
+| Person | Role | Notes |
+|--------|------|-------|
+| Amiel Terry | Lead trainer, product owner, primary user | Communicates via voice notes — stream of consciousness. Extract the intent. |
+| Derek | Co-trainer, secondary user | `Derek.mason2013@gmail.com` |
+| Parents | View-only via share link | No login — see their kid's profile and upcoming sessions |
 
 ---
 
-## Supabase Project
+## 2. Tech Stack
+
+| Layer | Tool | Version |
+|-------|------|---------|
+| Frontend | React | 18 |
+| Build tool | Vite | 5 |
+| Styling | Tailwind CSS | v3 (dark mode via `class` strategy) |
+| Routing | React Router | v6 |
+| Database / Auth | Supabase | `@supabase/supabase-js` |
+| Drag & drop | dnd-kit | `@dnd-kit/core`, `/sortable`, `/utilities` |
+| Email notifications | Web3Forms | Client-side fetch, no SDK |
+| Deployment | Netlify | Build: `npm run build`, publish: `dist/` |
+| Node | 20.13.1 | Pinned in `netlify.toml` |
+
+### ⚠️ CRITICAL VERSION CONSTRAINTS — DO NOT UPGRADE
+- **Vite past v5** — Vite 6+ uses Rolldown which breaks on Node 20.13.1
+- **Tailwind past v3** — Tailwind v4 requires `@tailwindcss/vite` which needs a newer Node
+
+---
+
+## 3. Supabase Project
 
 - **Project name:** Mason & Terry Training
 - **Reference ID:** `hmqeakjpstjgsdhmtobe`
 - **Region:** West US (Oregon)
-- **URL:** `https://hmqeakjpstjgsdhmtobe.supabase.co`
-- **Anon key:** stored in `.env` as `VITE_SUPABASE_ANON_KEY`
-- **JWT expiry:** Should be set to `2592000` (30 days) in Supabase → Auth → Settings
-- **Signups:** Should be DISABLED in Supabase → Auth → Settings (only Amiel and Derek should have accounts, created manually)
+- **Dashboard:** `https://supabase.com/dashboard/project/hmqeakjpstjgsdhmtobe`
+- **Anon key:** in `.env` as `VITE_SUPABASE_ANON_KEY` (safe to expose — client-side only)
 
 ### Database Tables
 
 | Table | Purpose |
 |-------|---------|
 | `athletes` | All athlete profiles |
-| `drills` | The drill library |
+| `drills` | The drill library (112+ drills seeded) |
 | `sessions` | Training sessions |
-| `session_athletes` | Join table — which athletes are in which session |
-| `session_drills` | Drills inside a session, with order, notes, reps, makes, duration |
+| `session_athletes` | Join — which athletes are in which session |
+| `session_drills` | Drills in a session with order, notes, reps, makes, duration |
 | `intake_submissions` | Parent intake form submissions (pending review) |
+| `player_rules` | Per-athlete rules (ordered list, stored separate from athletes table) |
 
-**Key field:** `athletes.share_token` (UUID) — used to generate parent shareable links. Anyone with the link can view that athlete's profile and sessions. No login required.
+### Key Athletes Table Columns
+```
+athletes:
+  id, first_name, last_name, age, grade, school, team, position,
+  favorite_player, parent_name, parent_phone, parent_email,
+  skill_level (beginner/intermediate/advanced),
+  gender (Male/Female),
+  goals, strengths, weaknesses, notes,
+  sessions_purchased (int), sessions_used (int),
+  share_token (uuid — used for parent link),
+  status (active/inactive/pending),
+  created_at
+```
 
-Full schema: `supabase/migrations/20260703000000_init.sql`
+### Key Drills Table Columns
+```
+drills:
+  id, title, category, difficulty (beginner/intermediate/advanced),
+  description, instructions, reps_or_time, video_url, created_at
 
-### RLS Summary
-- Authenticated users: full CRUD on all tables
-- Anon users: INSERT into `intake_submissions`, SELECT from `athletes`, `sessions`, `session_athletes`, `session_drills`, `drills` (share_token is the access control for the parent view)
+category CHECK constraint:
+  'ball handling','shooting','finishing','footwork','defense',
+  'strength & conditioning','IQ','warmup','recovery','live action'
+```
+
+### Drill Categories (display labels)
+| DB value | Display |
+|----------|---------|
+| `warmup` | Warm-Up |
+| `recovery` | Recovery |
+| `strength & conditioning` | Strength & Conditioning |
+| `defense` | Defense |
+| `footwork` | Footwork |
+| `finishing` | Finishing |
+| `shooting` | Shooting |
+| `ball handling` | Ball Handling |
+| `live action` | Live Action |
+| `IQ` | Basketball IQ |
+
+### player_rules Table
+```
+player_rules:
+  id, athlete_id (FK → athletes), rule (text), order_index (int), created_at
+```
+Rules are ordered and editable per athlete. Chase's rules were seeded via migration.
+
+### RLS Policies
+- **Authenticated users** (trainers): Full CRUD on all tables
+- **Anon users**: INSERT on `intake_submissions`, SELECT on `athletes`, `sessions`, `session_athletes`, `session_drills`, `drills` (parent view uses this — share_token is the access control)
+- **player_rules**: `player_rules` requires authenticated read/write; anon can read (for parent view if needed)
+
+### Migrations (in order)
+```
+supabase/migrations/
+  20260703000000_init.sql                    # Initial schema
+  20260713000000_location_and_categories.sql # Location field, category constraint updates
+  20260713000001_session_pack.sql            # sessions_purchased, sessions_used
+  20260713000002_drill_videos_storage.sql    # Supabase storage bucket for drill videos
+  20260714000000_player_rules.sql            # player_rules table + RLS
+  20260714000001_add_drills_and_chase_rules.sql # 112+ drills seeded, Chase's rules, live action category
+  20260714000002_gender.sql                  # gender column on athletes + intake_submissions
+```
+
+All migrations have been applied to the live Supabase project.
 
 ---
 
-## Architecture & Auth Model
+## 4. Auth Model
 
-### Three access levels:
+### Three Access Levels
 1. **Trainers (Amiel + Derek):** Email/password Supabase auth. Full CRUD. Accounts created manually in Supabase Dashboard → Auth → Users.
-2. **Parents (view-only):** No login. Get a shareable link: `/athlete/:share_token`. Can see athlete profile + upcoming sessions only.
-3. **Public (intake form):** No login. Can access `/intake/form` and submit. Creates a pending record trainers review in the app.
+2. **Parents (view-only):** No login. Get shareable link: `/athlete/:share_token`. See athlete profile + upcoming + past sessions.
+3. **Public (intake form):** No login. Access `/intake/form` only.
 
-### Auth persistence:
+### Auth Persistence
 - `supabase.js` uses `persistSession: true`, `autoRefreshToken: true`, `storageKey: 'courtflow-auth'`
-- Session is stored in localStorage. Once logged in on a device, the trainer stays logged in indefinitely (refresh token auto-renews on use)
-- Login page redirects home if a session already exists — trainers should never see the login screen after their first login on a device
+- Once logged in on a device, the trainer stays logged in. Login page redirects home if already authed.
+- **JWT expiry should be set to `2592000` (30 days)** in Supabase → Auth → Settings — check if this has been done.
+
+### Still Needs Manual Setup (Amiel)
+- [ ] Create trainer accounts in Supabase → Auth → Users for Amiel and Derek
+- [ ] Set JWT expiry to `2592000` in Supabase → Auth → Settings
+- [ ] Disable "Enable Sign Ups" in Supabase → Auth → Settings
+- [ ] Add `VITE_WEB3FORMS_KEY` to Netlify Environment Variables
 
 ---
 
-## Project File Structure
+## 5. Deployment
+
+- **Live URL:** `https://rad-chaja-b7245c.netlify.app`
+- **GitHub repo:** `https://github.com/amielterry26/courtflow`
+- **CI/CD:** GitHub → Netlify auto-deploy is now live (push to `main` triggers deploy)
+- **Build:** `npm run build` → output in `dist/`
+- **SPA redirect:** `netlify.toml` handles `/* → /index.html`
+- **Node version:** Pinned to `20` in `netlify.toml`
+
+### Netlify Environment Variables Required
+| Variable | Value |
+|----------|-------|
+| `VITE_SUPABASE_URL` | `https://hmqeakjpstjgsdhmtobe.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
+| `VITE_WEB3FORMS_KEY` | `527c9017-ad35-4337-9000-9515c906e162` |
+
+---
+
+## 6. Full File Structure
 
 ```
 courtflow/
 ├── public/
 ├── src/
 │   ├── lib/
-│   │   └── supabase.js          # Supabase client (30-day session, auto-refresh)
+│   │   └── supabase.js              # Supabase client init
 │   ├── context/
-│   │   ├── AuthContext.jsx      # Auth state provider
-│   │   └── ThemeContext.jsx     # Light/dark mode (persisted to localStorage)
+│   │   ├── AuthContext.jsx          # Auth state, onAuthStateChange listener
+│   │   └── ThemeContext.jsx         # Light/dark, localStorage, OS listener, overscroll bg
 │   ├── components/
-│   │   ├── Layout.jsx           # App shell: top header + bottom tab nav
-│   │   └── ProtectedRoute.jsx   # Redirects to /login if not authed
+│   │   ├── Layout.jsx               # App shell: top bar + floating pill nav
+│   │   └── ProtectedRoute.jsx       # Redirects to /login if not authed
 │   ├── pages/
-│   │   ├── Login.jsx            # Email/password login (auto-redirects home if already authed)
-│   │   ├── Today.jsx            # Dashboard — today's sessions
-│   │   ├── Athletes.jsx         # Athlete list with search
-│   │   ├── AthleteDetail.jsx    # Athlete profile + share link button
-│   │   ├── AthleteForm.jsx      # Create / edit athlete
-│   │   ├── AthletePublicView.jsx # Parent-facing view at /athlete/:token
-│   │   ├── Drills.jsx           # Drill library with category filter
-│   │   ├── DrillForm.jsx        # Create / edit / delete drill
-│   │   ├── Sessions.jsx         # Session list grouped by date
-│   │   ├── SessionDetail.jsx    # Session view + drill builder (drag & drop)
-│   │   ├── SessionForm.jsx      # Create / edit session + athlete picker
-│   │   ├── Intake.jsx           # Trainer intake review panel
-│   │   └── IntakeForm.jsx       # Public parent intake form (+ Web3Forms email notification)
-│   ├── App.jsx                  # Router (public + protected routes)
-│   ├── main.jsx                 # Entry point
-│   └── index.css                # Tailwind base import
+│   │   ├── Login.jsx                # Email/password, auto-redirects if already authed
+│   │   ├── Today.jsx                # Dashboard: stats row + today sessions + recent athletes
+│   │   ├── Athletes.jsx             # List + search + Gender/Grade/Age filters + session count
+│   │   ├── AthleteDetail.jsx        # Full profile, collapsible sections, sessions accordion
+│   │   ├── AthleteForm.jsx          # Create/edit athlete (includes gender field)
+│   │   ├── AthletePublicView.jsx    # Parent view at /athlete/:token
+│   │   ├── Drills.jsx               # Library: no default selection, category filters (multi-select)
+│   │   ├── DrillDetail.jsx          # Read-only drill view (shows filled fields only)
+│   │   ├── DrillForm.jsx            # Create/edit drill (routes to /drills/:id/edit)
+│   │   ├── Sessions.jsx             # Session list grouped by date + calendar export
+│   │   ├── SessionDetail.jsx        # Session view + drag-to-reorder drill builder
+│   │   ├── SessionForm.jsx          # Create/edit session + athlete multi-picker
+│   │   ├── Intake.jsx               # Trainer intake review panel
+│   │   ├── IntakeForm.jsx           # Public form (gender field required, Web3Forms email)
+│   │   └── WeeklySchedule.jsx       # Week view calendar
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
 ├── supabase/
-│   └── migrations/
-│       └── 20260703000000_init.sql
-├── index.html                   # Viewport meta (mobile-locked, Apple PWA tags)
+│   └── migrations/                  # All 7 migration files (all applied to prod)
+├── AGENT_HANDOFF.md                 # This file
+├── index.html
 ├── vite.config.js
 ├── tailwind.config.js
 ├── postcss.config.js
-├── netlify.toml                 # Build: npm run build, publish: dist, SPA redirect
-├── .env                         # VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_WEB3FORMS_KEY
-└── .env.example                 # Template for env vars
+├── netlify.toml
+├── .env                             # Not in git — see env vars table above
+└── .env.example
 ```
 
-### Routing (App.jsx)
-Public routes (no auth required):
-- `/login` — trainer login
-- `/intake/form` — parent-facing intake form
-- `/athlete/:token` — parent-facing athlete view
+---
 
-Protected routes (all wrapped in `ProtectedRoute`, redirects to `/login` if not authed):
-- `/` — Today view
-- `/athletes`, `/athletes/new`, `/athletes/:id`, `/athletes/:id/edit`
-- `/drills`, `/drills/new`, `/drills/:id`
-- `/sessions`, `/sessions/new`, `/sessions/:id`, `/sessions/:id/edit`
-- `/intake` — trainer intake review
+## 7. Routes
+
+### Public (no auth)
+| Route | Component | Notes |
+|-------|-----------|-------|
+| `/login` | Login.jsx | Redirects home if already authed |
+| `/intake/form` | IntakeForm.jsx | Parent intake, no auth |
+| `/athlete/:token` | AthletePublicView.jsx | Parent-facing profile view |
+
+### Protected (trainer-only, all behind ProtectedRoute)
+| Route | Component |
+|-------|-----------|
+| `/` | Today.jsx |
+| `/schedule` | WeeklySchedule.jsx |
+| `/athletes` | Athletes.jsx |
+| `/athletes/new` | AthleteForm.jsx |
+| `/athletes/:id` | AthleteDetail.jsx |
+| `/athletes/:id/edit` | AthleteForm.jsx |
+| `/drills` | Drills.jsx |
+| `/drills/new` | DrillForm.jsx |
+| `/drills/:id` | **DrillDetail.jsx** (read-only) |
+| `/drills/:id/edit` | DrillForm.jsx |
+| `/sessions` | Sessions.jsx |
+| `/sessions/new` | SessionForm.jsx |
+| `/sessions/:id` | SessionDetail.jsx |
+| `/sessions/:id/edit` | SessionForm.jsx |
+| `/intake` | Intake.jsx |
 
 ---
 
-## Features Built (Complete)
+## 8. Navigation
 
-### ✅ Authentication
-- Email/password login via Supabase Auth
-- Sessions persist indefinitely via auto-refresh (JWT expiry 30 days, `autoRefreshToken: true`)
+The bottom nav is a **floating pill/dock** (not full-width). It's fixed at `bottom-5`, centered, with a white/dark card and rounded-2xl. Active tab = blue background. Main content has `pb-28` to clear it.
+
+**Nav order:** Today → Drills → Sessions → Athletes → Intake
+
+---
+
+## 9. Features Built — Complete Inventory (Session-by-Session)
+
+### Session 1 — Initial Build (v1)
+- Full app scaffold: React, Vite, Tailwind, Supabase, dnd-kit
+- All core pages built: Today, Athletes, Drills, Sessions, Intake, AthleteDetail, AthleteForm, DrillForm, SessionDetail, SessionForm, IntakeForm
+- Auth: Email/password login, ProtectedRoute, session persistence
+- Parent share view (`/athlete/:token`)
+- Light/dark mode with localStorage persistence
+- Mobile viewport meta tags (no zoom, Apple PWA)
+- `netlify.toml` SPA redirect
+
+### Session 2 — Auth + Email Polish
 - Login page auto-redirects home if already authenticated
-- No signup on the login page — accounts are created manually only
+- Web3Forms integration in IntakeForm for email notifications
+- EmailJS evaluated and rejected (too complex — Web3Forms chosen instead)
 
-### ✅ Today View (`/`)
-- Shows all sessions scheduled for today
-- Each card: session title, time, athlete tags, ordered drill list, notes
-- Empty state with link to create a session
+### Session 3 — Parent View, Calendar, Session Pack, Videos
+- Parent view overhauled: upcoming sessions with drill breakdown by category
+- Google Calendar export (gcal link)
+- Apple Calendar export (ICS file)
+- Session pack tracker (sessions_purchased / sessions_used + progress bar on athlete profile)
+- Video upload for drills (Supabase storage bucket `drill-videos`)
+- Weekly schedule view (`/schedule`)
+- Session duplicate button in SessionDetail
 
-### ✅ Athletes (`/athletes`)
-- Searchable list of all active athletes
-- Avatar initials, skill level badge, position/school info
-- Create / edit / delete via form
+### Session 4 — Drill Filters, Player Rules, Nav, Drill Library
+- Multi-select drill category filters (OR logic, wrapping layout)
+- `live action` category added throughout (DrillForm, Drills, AthletePublicView)
+- Nav reordered: Today → Drills → Sessions → Athletes → Intake
+- **Player Rules** on every athlete profile — add, edit, delete, reorder (▲▼), stored in `player_rules` table
+- Chase's 6 player rules seeded via migration
+- 112+ drills added across all categories via migration
+- Apple Calendar button hidden on non-iOS (shows only on iPhone)
+- Parent view: Development section (goals, strengths, weaknesses, notes) + Session History
 
-### ✅ Athlete Detail (`/athletes/:id`)
-- Full profile view
-- Info grid: age, grade, team, fav player, parent contact
-- Development section: goals, strengths, weaknesses, notes
-- Upcoming sessions list
-- "Copy parent share link" button — copies `/athlete/:share_token` to clipboard
+### Session 5 — Polish Pass
+- **Drill library:** No category auto-selected on load; empty state prompts trainer to pick category
+- **Drill read-only view:** `/drills/:id` → DrillDetail.jsx (shows only filled fields); Edit button at top right
+- **Athlete header:** Parent name (tap-to-call), phone, email always visible in profile card
+- **Athlete filters:** Gender / Grade / Age dropdowns; Clear filters button; session count via join
+- **Gender field:** Added to AthleteForm and IntakeForm (required on intake); migration seeds Victoria + Isabel = Female, everyone else = Male
+- **Home dashboard:** 2-stat row (active athletes, sessions this week) + recent athletes section
+- **Floating pill nav:** Replaced full-width bar
+- **Collapsible sections** in AthleteDetail: Info, Development, Player Rules, Session History (history collapsed by default)
 
-### ✅ Drill Library (`/drills`)
-- Searchable + filterable by category
-- Categories: ball handling, shooting, finishing, footwork, defense, conditioning, IQ, warmup
-- Difficulty badges: beginner / intermediate / advanced
-- Create / edit / delete
-
-### ✅ Sessions (`/sessions`)
-- List grouped by date (newest first)
-- Shows time, athlete tags, drill count per session
-
-### ✅ Session Builder (`/sessions/:id`)
-- Add drills from library via bottom-sheet picker (with search)
-- Drag and drop to reorder drills (dnd-kit)
-- Expand each drill to set: duration (min), target reps, target makes, custom coaching notes
-- Changes persist to Supabase in real time
-
-### ✅ Intake Form (`/intake/form`) — PUBLIC
-- No login required
-- Parent fills out: child name, age, grade, school, team, skill level, goals, strengths, weaknesses, parent name/phone/email
-- On submit: saves to `intake_submissions` in Supabase
-- After save: fires a Web3Forms notification email to Amiel (and Derek once his email is added — see pending items)
-- Email is best-effort — if it fails, the DB submission still succeeds
-- Success screen: "You're on deck!" with personalized message
-
-### ✅ Intake Review (`/intake`) — TRAINER ONLY
-- Shows pending vs reviewed submissions
-- Expand a card to see all details
-- **Approve → Athlete**: one-tap converts submission to a real athlete profile
-- **Dismiss**: marks as reviewed without creating athlete
-
-### ✅ Parent Share View (`/athlete/:token`)
-- Public — no login
-- Shows athlete name, position, school, skill level, goals
-- Lists upcoming sessions with ordered drills, duration, coaching notes
-- "Powered by CourtFlow" footer
-
-### ✅ Light / Dark Mode
-- Toggle in top nav bar
-- Persisted to `localStorage`
-- Respects system preference on first load
-
-### ✅ Mobile Viewport Fix
-- `maximum-scale=1.0, user-scalable=no` prevents iOS auto-zoom
-- `apple-mobile-web-app-capable` meta tag set
-
-### ✅ Intake Email Notifications (Web3Forms)
-- After a successful intake form submission, a formatted email is sent via Web3Forms
-- No SDK — just a `fetch` POST to `https://api.web3forms.com/submit`
-- Access key stored in `.env` as `VITE_WEB3FORMS_KEY`
-- Must also be set in Netlify environment variables (baked in at build time)
+### Session 6 — Athlete Header, Sessions Accordion, Calendar Fix, Theme
+- **Athlete header redesign:** Name on top line, Grade/Age/Gender/session count on second line, position/school on third. Skill badge. Parent contact box (name, phone, email tappable). Share link button.
+- **Sessions section restructured:** Today (blue label, always visible) → Upcoming (always visible) → Past(N) collapsed accordion
+- **Apple Calendar fixed:** Replaced broken `data:text/calendar` approach with `navigator.share()` + ICS file. Opens iOS share sheet → "Add to Calendar". Falls back to blob URL on desktop.
+- **Theme:** Added `MediaQueryList` listener — if no localStorage override, app follows OS theme changes in real time
+- **Overscroll background:** `document.documentElement.style.backgroundColor` + `document.body.style.backgroundColor` set on every theme change (`#09090b` dark / `#fafafa` light) — fixes iOS rubber-band white flash
 
 ---
 
-## Deployment
+## 10. ThemeContext Behavior (Important Detail)
 
-- **Platform:** Netlify
-- **Live URL:** `https://rad-chaja-b7245c.netlify.app`
-- **GitHub repo:** `https://github.com/amielterry26/courtflow`
-- **Build command:** `npm run build`
-- **Publish dir:** `dist`
-- **SPA redirect:** `netlify.toml` handles `/* → /index.html` (required for React Router)
-- **Env vars on Netlify:** `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_WEB3FORMS_KEY` must all be set in Netlify site settings → Environment Variables (they get baked in at build time)
-- **Deploy method:** Currently manual drag-and-drop of `dist/` folder. No CI/CD yet.
-
----
-
-## Where We Stopped (Session 2 — 2026-07-07)
-
-### What was completed this session:
-1. **Persistent login** — Login page now auto-redirects home if a session already exists. Trainers log in once per device and never see the login screen again.
-2. **Intake email notifications** — Web3Forms integrated into `IntakeForm.jsx`. On every submission, a formatted email fires to Amiel's email (`amielterry.dev@gmail.com`). Web3Forms access key is in `.env`.
-3. **EmailJS was evaluated and rejected** — too many setup steps. Web3Forms was chosen instead (simpler, no SDK, one key, one fetch call).
-4. **Confirmed route security** — All trainer routes are behind `ProtectedRoute`. The concern about someone navigating from the intake form URL to protected pages is already handled — they'd hit the login wall.
-
-### Pending manual steps (Amiel needs to do these):
-- [ ] **Supabase:** Create accounts for Amiel and Derek in Supabase → Auth → Users
-- [ ] **Supabase:** Set JWT expiry to `2592000` in Supabase → Auth → Settings
-- [ ] **Supabase:** Disable "Enable Sign Ups" in Supabase → Auth → Settings
-- [ ] **Web3Forms:** Add `VITE_WEB3FORMS_KEY=527c9017-ad35-4337-9000-9515c906e162` to Netlify → Site Settings → Environment Variables
-- [ ] **Derek's email:** Provide Derek's email so it can be added as a CC to the Web3Forms notification
-- [ ] **Redeploy:** Run `npm run build` and drag `dist/` to Netlify after Netlify env var is added
-
-### Next pending feature (not started yet):
-- Add Derek's email to the intake notification email (once his address is known — pass as `cc` in the Web3Forms payload)
+```js
+// ThemeContext.jsx logic:
+// 1. Initial state: reads localStorage → if none, reads prefers-color-scheme
+// 2. Listens for OS theme changes via MediaQueryList — auto-follows system IF
+//    no localStorage override exists
+// 3. On every theme change: sets .dark class on <html>, writes to localStorage,
+//    sets document.documentElement.style.backgroundColor for overscroll fix
+// 4. Toggle button (in Layout.jsx header) manually overrides — writes to localStorage
+```
 
 ---
 
-## Known Issues / Backlog
+## 11. Apple Calendar Implementation (Current — Session 6)
 
-| # | Issue | Priority |
-|---|-------|----------|
-| 1 | No CI/CD — every deploy is manual drag-and-drop | Medium |
-| 2 | No drill detail read-only page — `/drills/:id` routes to edit form | Low |
-| 3 | No loading skeletons — pages show "Loading..." text | Low |
-| 4 | 555KB bundle size warning from Vite | Low |
-| 5 | No error boundaries — silent failures if Supabase is down | Low |
-| 6 | Intake form is single-child only (one form per kid) | Intentional for v1 |
-| 7 | No push notifications to parents for new sessions | Future |
-| 8 | No offline/PWA support | Future |
-| 9 | Derek's email not yet added to intake notifications | Blocked on Derek's email |
+All three calendar files (`Sessions.jsx`, `SessionDetail.jsx`, `AthletePublicView.jsx`) now use:
+
+```js
+async function openAppleCalendar(session) {
+  const ics = buildICSContent(session)
+  const file = new File([ics], 'courtflow.ics', { type: 'text/calendar' })
+
+  if (typeof navigator.share === 'function' && navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file] }) } catch { /* user cancelled */ }
+    return
+  }
+  // Desktop fallback
+  const blob = new Blob([ics], { type: 'text/calendar' })
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+  setTimeout(() => URL.revokeObjectURL(url), 2000)
+}
+```
+
+The old `window.location.href = 'data:text/calendar...'` approach was removed — it was blocked by iOS Safari in recent versions. The `navigator.share()` + File approach opens the native iOS share sheet, where users tap "Add to Calendar."
 
 ---
 
-## Key Decisions Made (And Why)
+## 12. AthleteDetail Page Structure
+
+```
+← Back
+
+[Header Card]
+  Avatar | Name
+         | Grade X · Yy · Gender · Z sessions
+         | Position · School
+  [Skill badge]
+  [Parent Contact Box]
+    Parent: Parent Name
+    Phone:  555-xxx-xxxx  ← tap-to-call
+    Email:  email@x.com   ← tap-to-email
+  [🔗 Copy parent share link]
+
+[Info ▼ collapsible]       ← open by default
+  Age | Grade | Gender | Team | Fav player
+
+[Session Pack]             ← only if sessions_purchased > 0
+  Progress bar
+
+[Development ▼ collapsible] ← open by default
+  Goals | Strengths | Weaknesses | Notes
+
+[Player Rules ▼ collapsible] ← open by default
+  Numbered list, ▲▼ reorder, Edit/✕ on hover, Add input
+
+[Sessions card]
+  TODAY (blue)
+    session rows
+  UPCOMING
+    session rows
+  PAST (N) ▼  ← collapsed by default
+    session rows (dim)
+```
+
+---
+
+## 13. Known Issues & Backlog
+
+| # | Issue | Priority | Notes |
+|---|-------|----------|-------|
+| 1 | No loading skeletons | Low | Shows "Loading..." text throughout |
+| 2 | Bundle size ~592KB | Low | Acceptable for internal tool |
+| 3 | No error boundaries | Low | Silent failures if Supabase is down |
+| 4 | No push notifications to parents | Future | "Session scheduled for Friday" |
+| 5 | No PWA/offline support | Future | Courtside connectivity can be spotty |
+| 6 | No custom domain | Backlog | Still on `rad-chaja-b7245c.netlify.app` |
+| 7 | Intake → Athlete: gender/grade not auto-populated | Low | When approving an intake, the new athlete form could pre-fill from intake submission |
+| 8 | Drill library has no read-only view from session context | Low | From SessionDetail, drills aren't linked to DrillDetail |
+| 9 | AthletePublicView player rules not shown | Low | Parent view doesn't show player rules — may be intentional |
+| 10 | No per-athlete session customization | Future | All athletes in a session share the same drill list |
+
+---
+
+## 14. Key Architecture Decisions
 
 | Decision | Reason |
 |----------|--------|
-| No Google OAuth | Only 2 users — email/password is simpler |
-| Parent share links, no parent accounts | Zero friction — works like a Google Doc share link |
-| No CI/CD yet | Manual deploys are fine for now, no urgency |
-| Vite 5, not Vite 6/7/8 | Node 20.13.1 breaks rolldown bundler in newer Vite |
-| Tailwind v3, not v4 | Same Node version constraint |
-| Web3Forms over EmailJS | EmailJS required too many setup steps (service, template, multiple IDs). Web3Forms is one key, one fetch. |
-| Email notifications are best-effort | DB save is the source of truth. If email fails, the submission is still in Supabase and visible in the intake review panel. |
-| Tags dropped from drills | Category field is enough for filtering |
-| Video URL dropped from drills | `drills.video_url` field exists in schema but not used in UI yet |
-| One form per intake (not multi-child) | Keeps the form fast and simple on a phone |
-| All athletes share the same drills in a session | Simplicity — trainers adjust on the fly |
+| No Google OAuth | Only 2 users — email/password is simpler and sufficient |
+| Parent share links, not accounts | Zero friction — works like a Google Doc share link |
+| Vite 5, Tailwind 3 | Node 20.13.1 constraint — newer versions break the build |
+| Web3Forms over EmailJS | EmailJS too many setup steps. Web3Forms = one key, one fetch call |
+| Email is best-effort | DB save is source of truth. Intake is in Supabase even if email fails |
+| dnd-kit for drag-and-drop | Well-maintained, touch-first, works great on mobile |
+| player_rules as separate table | Avoids jsonb complexity, cleaner to reorder and edit |
+| gender as separate column | Clean filtering, simple constraints, migration-seeded for existing athletes |
+| `navigator.share()` for ICS | `data:` URIs blocked in iOS Safari 17+; share sheet is the correct approach |
+| Floating pill nav | Cleaner than full-width bar — doesn't dominate the screen on mobile |
+| No CI/CD initially → now connected | GitHub → Netlify auto-deploy is live. Push to main = deploy. |
 
 ---
 
-## Future Features (Backlog)
+## 15. Future Features (Backlog, Not Started)
 
-These were discussed but intentionally left out of v1:
+These were discussed but intentionally left out of v1. All are valid ideas for future sessions:
 
-- **Per-athlete drill customization within a session** — right now all athletes get the same drills. Future: branch per athlete.
-- **Session templates** — save a session as a template and reuse it.
-- **Progress tracking** — log what actually happened (makes vs target makes, etc.).
-- **Parent accounts** — if share links feel insufficient, add Supabase auth for parents tied to their kid's record.
-- **Video drill demonstrations** — `drills.video_url` field exists in the DB, just needs UI.
-- **Push notifications to parents** — "Session scheduled for Friday at 4pm."
-- **CI/CD via GitHub** — connect Netlify to GitHub so `git push` auto-deploys.
-- **PWA / offline mode** — service worker for basic offline support courtside.
-- **Custom domain** — replace `rad-chaja-b7245c.netlify.app` with something like `courtflow.app`.
-
----
-
-## Environment Variables Reference
-
-| Variable | Where used | Notes |
-|----------|-----------|-------|
-| `VITE_SUPABASE_URL` | `src/lib/supabase.js` | `https://hmqeakjpstjgsdhmtobe.supabase.co` |
-| `VITE_SUPABASE_ANON_KEY` | `src/lib/supabase.js` | Supabase anon key — safe to expose in client |
-| `VITE_WEB3FORMS_KEY` | `src/pages/IntakeForm.jsx` | `527c9017-ad35-4337-9000-9515c906e162` — Web3Forms access key, designed to be public |
-
-All three must be set in both `.env` (local dev) and Netlify site settings → Environment Variables (production).
+- **Session templates** — Save a session as a reusable template
+- **Progress tracking** — Log what actually happened during a session (makes vs target, notes per drill)
+- **Per-athlete session customization** — Right now all athletes share the same drill list per session. Future: per-athlete branches
+- **Parent push notifications** — "Session scheduled for Friday 4pm" via web push or email
+- **Parent accounts** — If share links aren't sufficient, real Supabase auth for parents
+- **Video drill demos** — `drills.video_url` field exists and upload UI is in DrillForm. Just needs the DrillDetail view to be surfaced more prominently in session context
+- **PWA / offline mode** — Service worker for basic offline viewing courtside
+- **Custom domain** — Replace `rad-chaja-b7245c.netlify.app`
+- **Attendance tracking** — Mark athletes present/absent per session
+- **Session notes on parent view** — Right now session notes aren't shown to parents
+- **Bulk athlete import** — CSV or form-based bulk add
+- **Athlete archive / inactive list** — Currently only active athletes shown; no way to view inactive from the app
 
 ---
 
-## Agent Instructions
+## 16. Agent Instructions
 
-If you are an AI agent reading this to pick up where we left off:
+**Read this before writing a single line of code.**
 
-1. **Read this whole document first.** Don't skip to the code.
-2. **Check "Where We Stopped"** — that's your immediate context.
-3. **Ask questions if anything is unclear** before writing code. Amiel communicates via voice notes (stream-of-consciousness) — read through and pull out the intent.
-4. **Do a logic pass** if you're about to touch auth, RLS policies, or the session builder — these are the most complex parts.
-5. **Don't over-engineer.** This is an internal tool for 2 people. Simple > clever.
-6. **Mobile first, always.** Every UI element should be designed for a phone screen first.
-7. **Test the build** (`npm run build`) before declaring anything done.
-8. **The `.env` file is not in git.** The values are documented in the Environment Variables table above.
-9. **Do not upgrade Vite or Tailwind.** Node 20.13.1 is the runtime and newer versions break on it.
+1. **Ask questions if anything is ambiguous.** Amiel communicates via voice notes — read through the intent, don't ask about every word, but do ask if something is architecturally unclear before building in the wrong direction.
+
+2. **Do a logic pass first** if touching: auth flow, RLS policies, `player_rules` reordering, or the session builder drag-and-drop. These are the most entangled parts.
+
+3. **Mobile first, always.** Design for iPhone. If it's awkward to tap one-handed on a 6" screen, fix it.
+
+4. **Simple > clever.** This is a tool for 2 people. Don't abstract, don't over-engineer, don't add features beyond what's asked.
+
+5. **Test the build:** `npm run build` must pass clean before pushing. The only warning allowed is the bundle size warning.
+
+6. **The `.env` file is not in git.** Values are in the Environment Variables table above.
+
+7. **Do not upgrade Vite or Tailwind.** Node 20.13.1 is the runtime.
+
+8. **Push to `main` = auto-deploys to Netlify.** Confirm the build passes locally first.
+
+9. **All migrations go in `supabase/migrations/`.** Use `npx supabase db push --linked` to apply them. Use timestamp format `YYYYMMDDHHMMSS_description.sql`.
+
+10. **Current commit:** `77c2eed` (Session 6). The app is fully functional and deployed.
