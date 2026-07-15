@@ -38,13 +38,16 @@ export default function Intake() {
       status: 'active',
     }).select().single()
 
-    if (!error && newAthlete) {
-      await supabase.from('intake_submissions').update({ reviewed: true }).eq('id', sub.id)
-      setSubmissions(prev => prev.map(s => s.id === sub.id ? { ...s, reviewed: true } : s))
-      const link = `${window.location.origin}/athlete/${newAthlete.share_token}`
-      setNewShareLink({ name: sub.child_name, url: link })
-      setLinkCopied(false)
+    if (error || !newAthlete) {
+      alert(`Failed to create athlete: ${error?.message ?? 'Unknown error'}. Please try again.`)
+      return
     }
+
+    await supabase.from('intake_submissions').update({ reviewed: true }).eq('id', sub.id)
+    setSubmissions(prev => prev.map(s => s.id === sub.id ? { ...s, reviewed: true } : s))
+    const link = `${window.location.origin}/athlete/${newAthlete.share_token}`
+    setNewShareLink({ name: sub.child_name, url: link })
+    setLinkCopied(false)
   }
 
   async function dismiss(id) {
@@ -135,9 +138,20 @@ export default function Intake() {
               </p>
               <div className="space-y-2">
                 {reviewed.map(s => (
-                  <div key={s.id} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800 px-4 py-3 opacity-60">
-                    <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{s.child_name}</p>
-                    <p className="text-xs text-zinc-400">{s.parent_name} · {new Date(s.created_at).toLocaleDateString()}</p>
+                  <div key={s.id} className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-100 dark:border-zinc-800 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{s.child_name}</p>
+                        <p className="text-xs text-zinc-400">{s.parent_name} · {new Date(s.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <button
+                        onClick={() => approve(s)}
+                        className="text-xs text-blue-500 hover:text-blue-600 font-medium ml-3 flex-shrink-0"
+                        title="Re-add to Athletes if athlete is missing"
+                      >
+                        → Athlete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
