@@ -28,6 +28,7 @@ export default function Intake() {
       school: sub.school,
       team: sub.team,
       skill_level: sub.skill_level,
+      gender: sub.gender,
       goals: sub.goals,
       strengths: sub.strengths,
       weaknesses: sub.weaknesses,

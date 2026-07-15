@@ -83,7 +83,7 @@ export default function DrillForm() {
         }
         setUploading(false)
       }
-      navigate('/drills')
+      navigate(`/drills/${newDrill.id}`)
     }
   }
 

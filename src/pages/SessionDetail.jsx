@@ -75,7 +75,7 @@ export default function SessionDetail() {
   }
 
   async function addDrill(drill) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('session_drills')
       .insert({
         session_id: id,
@@ -84,6 +84,7 @@ export default function SessionDetail() {
       })
       .select('*, drill:drills(*)')
       .single()
+    if (error) { alert('Failed to add drill. Please try again.'); return }
     if (data) setSessionDrills(prev => [...prev, data])
     setShowDrillPicker(false)
     setDrillSearch('')
