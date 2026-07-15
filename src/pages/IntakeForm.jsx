@@ -31,30 +31,38 @@ export default function IntakeForm() {
       setSaving(false)
     } else {
       // Send email notification to trainers (silent fail — DB save already succeeded)
-      fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          access_key:  import.meta.env.VITE_WEB3FORMS_KEY,
-          subject:     `New intake: ${form.child_name}`,
-          from_name:   'CourtFlow Intake Form',
-          cc:          'Derek.mason2013@gmail.com',
-          message: [
-            `Child: ${form.child_name}`,
-            `Gender: ${form.gender || '—'}  |  Age: ${form.age || '—'}  |  Grade: ${form.grade || '—'}`,
-            `School: ${form.school || '—'}  |  Team: ${form.team || '—'}`,
-            `Skill level: ${form.skill_level || '—'}`,
-            ``,
-            `Goals: ${form.goals || '—'}`,
-            `Strengths: ${form.strengths || '—'}`,
-            `Improve: ${form.weaknesses || '—'}`,
-            ``,
-            `Parent: ${form.parent_name}`,
-            `Phone: ${form.parent_phone || '—'}`,
-            `Email: ${form.parent_email || '—'}`,
-          ].join('\n'),
-        }),
-      }).catch(() => {})
+      const web3key = import.meta.env.VITE_WEB3FORMS_KEY
+      if (web3key) {
+        fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_key: web3key,
+            subject:    `New intake: ${form.child_name}`,
+            from_name:  'CourtFlow Intake Form',
+            cc:         'Derek.mason2013@gmail.com',
+            message: [
+              `Child: ${form.child_name}`,
+              `Gender: ${form.gender || '—'}  |  Age: ${form.age || '—'}  |  Grade: ${form.grade || '—'}`,
+              `School: ${form.school || '—'}  |  Team: ${form.team || '—'}`,
+              `Skill level: ${form.skill_level || '—'}`,
+              ``,
+              `Goals: ${form.goals || '—'}`,
+              `Strengths: ${form.strengths || '—'}`,
+              `Improve: ${form.weaknesses || '—'}`,
+              ``,
+              `Parent: ${form.parent_name}`,
+              `Phone: ${form.parent_phone || '—'}`,
+              `Email: ${form.parent_email || '—'}`,
+            ].join('\n'),
+          }),
+        })
+          .then(r => r.json())
+          .then(j => { if (!j.success) console.error('Web3Forms failed:', j) })
+          .catch(err => console.error('Web3Forms error:', err))
+      } else {
+        console.warn('VITE_WEB3FORMS_KEY not set — email notification skipped')
+      }
       setSubmitted(true)
     }
   }

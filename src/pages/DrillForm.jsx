@@ -31,7 +31,13 @@ export default function DrillForm() {
 
   function handleVideoSelect(e) {
     const file = e.target.files?.[0]
-    if (file) setVideoFile(file)
+    if (!file) return
+    if (file.size > 200 * 1024 * 1024) {
+      setError('Video is too large (max 200 MB). Trim it shorter or compress before uploading.')
+      return
+    }
+    setError('')
+    setVideoFile(file)
   }
 
   async function uploadVideo(drillId) {

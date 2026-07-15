@@ -7,7 +7,15 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined) // undefined = loading
 
   useEffect(() => {
+    // 6s timeout — if Supabase is blocked by the network, don't hang on white screen
+    let resolved = false
+    const timeout = setTimeout(() => {
+      if (!resolved) setUser(null)
+    }, 6000)
+
     supabase.auth.getSession().then(({ data }) => {
+      resolved = true
+      clearTimeout(timeout)
       setUser(data.session?.user ?? null)
     })
 
@@ -15,7 +23,7 @@ export function AuthProvider({ children }) {
       setUser(session?.user ?? null)
     })
 
-    return () => subscription.unsubscribe()
+    return () => { clearTimeout(timeout); subscription.unsubscribe() }
   }, [])
 
   return (

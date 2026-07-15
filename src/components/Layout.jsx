@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../context/ThemeContext'
@@ -13,6 +14,15 @@ const nav = [
 export default function Layout({ children }) {
   const navigate = useNavigate()
   const { dark, toggle } = useTheme()
+  const [online, setOnline] = useState(navigator.onLine)
+
+  useEffect(() => {
+    const up = () => setOnline(true)
+    const down = () => setOnline(false)
+    window.addEventListener('online', up)
+    window.addEventListener('offline', down)
+    return () => { window.removeEventListener('online', up); window.removeEventListener('offline', down) }
+  }, [])
 
   async function signOut() {
     await supabase.auth.signOut()
@@ -42,6 +52,13 @@ export default function Layout({ children }) {
           </button>
         </div>
       </header>
+
+      {/* Offline banner */}
+      {!online && (
+        <div className="bg-amber-500 text-white text-xs text-center py-2 px-4 font-medium">
+          No connection — showing cached data
+        </div>
+      )}
 
       {/* Main content — extra bottom padding for floating nav */}
       <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-6 pb-28">
