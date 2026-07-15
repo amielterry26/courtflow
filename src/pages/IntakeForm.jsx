@@ -40,7 +40,7 @@ export default function IntakeForm() {
             access_key: web3key,
             subject:    `New intake: ${form.child_name}`,
             from_name:  'CourtFlow Intake Form',
-            cc:         'Derek.mason2013@gmail.com',
+            cc:         'Derek.mason2013@gmail.com,amielterry26@gmail.com',
             message: [
               `Child: ${form.child_name}`,
               `Gender: ${form.gender || '—'}  |  Age: ${form.age || '—'}  |  Grade: ${form.grade || '—'}`,
