@@ -6,6 +6,8 @@ export default function Intake() {
   const [loading, setLoading] = useState(true)
   const [newShareLink, setNewShareLink] = useState(null)
   const [linkCopied, setLinkCopied] = useState(false)
+  // Track submission IDs that successfully created an athlete this session
+  const [converted, setConverted] = useState(new Set())
 
   useEffect(() => {
     supabase
@@ -20,6 +22,26 @@ export default function Intake() {
 
   async function approve(sub) {
     setNewShareLink(null)
+
+    // Check for existing athlete with the same name to prevent duplicates
+    const firstName = sub.child_name.split(' ')[0] ?? sub.child_name
+    const lastName = sub.child_name.split(' ').slice(1).join(' ') || ''
+    const { data: existing } = await supabase
+      .from('athletes')
+      .select('id, share_token')
+      .eq('first_name', firstName)
+      .eq('last_name', lastName)
+      .eq('status', 'active')
+      .maybeSingle()
+
+    if (existing) {
+      setConverted(prev => new Set([...prev, sub.id]))
+      const link = `${window.location.origin}/athlete/${existing.share_token}`
+      setNewShareLink({ name: sub.child_name, url: link })
+      setLinkCopied(false)
+      return
+    }
+
     const { data: newAthlete, error } = await supabase.from('athletes').insert({
       first_name: sub.child_name.split(' ')[0] ?? sub.child_name,
       last_name: sub.child_name.split(' ').slice(1).join(' ') || '',
@@ -45,6 +67,7 @@ export default function Intake() {
 
     await supabase.from('intake_submissions').update({ reviewed: true }).eq('id', sub.id)
     setSubmissions(prev => prev.map(s => s.id === sub.id ? { ...s, reviewed: true } : s))
+    setConverted(prev => new Set([...prev, sub.id]))
     const link = `${window.location.origin}/athlete/${newAthlete.share_token}`
     setNewShareLink({ name: sub.child_name, url: link })
     setLinkCopied(false)
@@ -144,13 +167,15 @@ export default function Intake() {
                         <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{s.child_name}</p>
                         <p className="text-xs text-zinc-400">{s.parent_name} · {new Date(s.created_at).toLocaleDateString()}</p>
                       </div>
-                      <button
-                        onClick={() => approve(s)}
-                        className="text-xs text-blue-500 hover:text-blue-600 font-medium ml-3 flex-shrink-0"
-                        title="Re-add to Athletes if athlete is missing"
-                      >
-                        → Athlete
-                      </button>
+                      {!converted.has(s.id) && (
+                        <button
+                          onClick={() => approve(s)}
+                          className="text-xs text-blue-500 hover:text-blue-600 font-medium ml-3 flex-shrink-0"
+                          title="Re-add to Athletes if athlete is missing"
+                        >
+                          → Athlete
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
