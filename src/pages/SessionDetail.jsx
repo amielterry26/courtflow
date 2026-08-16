@@ -38,7 +38,7 @@ export default function SessionDetail() {
   const load = useCallback(async () => {
     const { data } = await supabase
       .from('sessions')
-      .select('*, session_athletes(athlete_id, athlete:athletes(first_name, last_name))')
+      .select('*, session_athletes(athlete_id, athlete:athletes(first_name, last_name)), gym:gyms(id, name, maps_url)')
       .eq('id', id)
       .single()
     setSession(data)
@@ -190,6 +190,16 @@ export default function SessionDetail() {
           {session.start_time && ` · ${formatTime(session.start_time)}`}
           {session.end_time && ` – ${formatTime(session.end_time)}`}
         </p>
+        {session.gym && (
+          session.gym.maps_url ? (
+            <a href={session.gym.maps_url} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 mt-1 text-sm text-blue-600 dark:text-blue-400 font-medium">
+              📍 {session.gym.name}
+            </a>
+          ) : (
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">📍 {session.gym.name}</p>
+          )
+        )}
 
         {athletes.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-3">
@@ -407,7 +417,7 @@ async function openAppleCalendar(session) {
     `DTSTART:${start}`,
     `DTEND:${end}`,
     `SUMMARY:${session.session_title}`,
-    session.location ? `LOCATION:${session.location}` : null,
+    (session.gym?.name || session.location) ? `LOCATION:${session.gym?.name || session.location}` : null,
     'END:VEVENT',
     'END:VCALENDAR',
   ].filter(Boolean).join('\r\n')
@@ -431,7 +441,7 @@ function googleCalendarURL(session) {
     action: 'TEMPLATE',
     text: session.session_title,
     dates: `${start}/${end}`,
-    ...(session.location && { location: session.location }),
+    ...((session.gym?.name || session.location) && { location: session.gym?.name || session.location }),
   })
   return `https://calendar.google.com/calendar/render?${params}`
 }

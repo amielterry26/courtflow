@@ -7,7 +7,7 @@ const BLANK = {
   session_date: new Date().toISOString().split('T')[0],
   start_time: '',
   end_time: '',
-  location: '',
+  gym_id: '',
   notes: '',
 }
 
@@ -17,6 +17,7 @@ export default function SessionForm() {
   const isEdit = Boolean(id)
   const [form, setForm] = useState(BLANK)
   const [athletes, setAthletes] = useState([])
+  const [gyms, setGyms] = useState([])
   const [selectedAthletes, setSelectedAthletes] = useState([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -24,6 +25,8 @@ export default function SessionForm() {
   useEffect(() => {
     supabase.from('athletes').select('id, first_name, last_name').eq('status', 'active').order('last_name')
       .then(({ data }) => setAthletes(data ?? []))
+    supabase.from('gyms').select('id, name').order('name')
+      .then(({ data }) => setGyms(data ?? []))
 
     if (isEdit) {
       supabase.from('sessions').select('*, session_athletes(athlete_id)').eq('id', id).single()
@@ -54,12 +57,14 @@ export default function SessionForm() {
 
     let sessionId = id
 
+    const payload = { ...form, gym_id: form.gym_id || null }
+
     if (isEdit) {
-      const { error } = await supabase.from('sessions').update(form).eq('id', id)
+      const { error } = await supabase.from('sessions').update(payload).eq('id', id)
       if (error) { setError(error.message); setSaving(false); return }
       await supabase.from('session_athletes').delete().eq('session_id', id)
     } else {
-      const { data, error } = await supabase.from('sessions').insert(form).select().single()
+      const { data, error } = await supabase.from('sessions').insert(payload).select().single()
       if (error) { setError(error.message); setSaving(false); return }
       sessionId = data.id
     }
@@ -88,7 +93,14 @@ export default function SessionForm() {
             <Field label="Start time" value={form.start_time} onChange={set('start_time')} type="time" />
             <Field label="End time" value={form.end_time} onChange={set('end_time')} type="time" />
           </div>
-          <Field label="Location" value={form.location} onChange={set('location')} placeholder="e.g. Lifetime Fitness, Home..." />
+          <div>
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Gym / Location</label>
+            <select value={form.gym_id ?? ''} onChange={set('gym_id')}
+              className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">— No location —</option>
+              {gyms.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+          </div>
           <TextArea label="Notes" value={form.notes} onChange={set('notes')} />
         </div>
 

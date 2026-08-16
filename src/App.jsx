@@ -19,6 +19,7 @@ import Intake from './pages/Intake'
 import IntakeForm from './pages/IntakeForm'
 import AthletePublicView from './pages/AthletePublicView'
 import WeeklySchedule from './pages/WeeklySchedule'
+import Gyms from './pages/Gyms'
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
                     <Route path="/sessions/:id/edit" element={<SessionForm />} />
 
                     <Route path="/intake" element={<Intake />} />
+                    <Route path="/gyms" element={<Gyms />} />
                   </Routes>
                 </Layout>
               </ProtectedRoute>

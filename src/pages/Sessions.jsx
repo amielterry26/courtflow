@@ -36,12 +36,16 @@ export default function Sessions() {
     <div>
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Sessions</h1>
-        <Link
-          to="/sessions/new"
-          className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-        >
-          + Session
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/gyms"
+            className="text-sm border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 px-3 py-2 rounded-lg font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+            📍 Gyms
+          </Link>
+          <Link to="/sessions/new"
+            className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+            + Session
+          </Link>
+        </div>
       </div>
 
       {sessions.length === 0 ? (
