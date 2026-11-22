@@ -13,6 +13,7 @@ export default function AdminRun() {
   const [editing, setEditing] = useState(false)
   const [unpaidOnly, setUnpaidOnly] = useState(false)
   const [addId, setAddId] = useState('')
+  const [reminding, setReminding] = useState('')
 
   useEffect(() => { load() }, [id])
 
@@ -46,6 +47,14 @@ export default function AdminRun() {
     await supabase.from('run_signups').insert({ run_id: id, player_id: addId, payment_method: 'cash' })
     setAddId('')
     load()
+  }
+
+  async function textReminder() {
+    if (!confirm('Text a reminder to everyone on this run?')) return
+    setReminding('Sending…')
+    const { data, error } = await supabase.functions.invoke('runs-sms', { body: { action: 'remind_run', run_id: id } })
+    if (error) return setReminding(error.message)
+    setReminding(`Sent ${data.sent}${data.failed?.length ? ` · couldn't text ${data.failed.length}: ${data.failed.join('; ')}` : ''}`)
   }
 
   async function toggleCancelled() {
@@ -142,6 +151,15 @@ export default function AdminRun() {
       {unpaidPhones.length > 0 && (
         <a href={groupSmsLink(unpaidPhones, `Reminder: ${shortDate(run.run_date)} run is $${Number(run.price)}. Pay here: ${window.location.origin}`)}
           className="btn-ghost mt-3 w-full">💬 Text unpaid players ({unpaidPhones.length})</a>
+      )}
+
+      {signups.length > 0 && (
+        <>
+          <button onClick={textReminder} className="btn-ghost mt-2 w-full">📲 Text reminder to roster</button>
+          <p className="mt-1 text-center text-xs text-muted">
+            {reminding || 'Reminders go out automatically the evening before.'}
+          </p>
+        </>
       )}
 
       <div className="mt-8 flex gap-2">

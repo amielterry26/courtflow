@@ -33,8 +33,11 @@ export default function AdminRequests({ onChange }) {
 
   async function approve(p) {
     await supabase.from('run_players').update({ status: 'approved' }).eq('id', p.id)
-    setApproved(a => [...a, p])
+    setApproved(a => [...a, { ...p, texting: true }])
     load()
+    // Twilio texts them their link; if it can't, the manual text button stays up
+    const { data } = await supabase.functions.invoke('runs-sms', { body: { action: 'approved', player_id: p.id } })
+    setApproved(a => a.map(x => x.id === p.id ? { ...x, texting: false, texted: !!data?.sent, textError: data?.error } : x))
   }
 
   async function deny(p) {
@@ -57,8 +60,16 @@ export default function AdminRequests({ onChange }) {
       {approved.map(p => (
         <div key={p.id} className="rounded-2xl border border-good/30 bg-good/10 p-4 text-sm text-good">
           <p className="font-semibold">✓ {p.first_name} {p.last_name} is approved</p>
-          <p className="mt-0.5 text-good/80">Send them the link so they can join and pay:</p>
-          <a href={smsLink(p.phone, approvalText(p))} className="btn mt-3 w-full bg-green-600 py-3 text-white">💬 Text {p.first_name}</a>
+          {p.texting && <p className="mt-0.5 text-good/80">Texting them their link…</p>}
+          {p.texted && <p className="mt-0.5 text-good/80">📲 Texted {p.first_name} their link to join.</p>}
+          {!p.texting && !p.texted && (
+            <>
+              <p className="mt-0.5 text-good/80">
+                {p.textError ? `Couldn't auto-text (${p.textError}). ` : ''}Send them the link so they can join and pay:
+              </p>
+              <a href={smsLink(p.phone, approvalText(p))} className="btn mt-3 w-full bg-green-600 py-3 text-white">💬 Text {p.first_name}</a>
+            </>
+          )}
         </div>
       ))}
 
