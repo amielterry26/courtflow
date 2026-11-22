@@ -1,5 +1,5 @@
 # CourtFlow — Agent Handoff Document
-**Last updated: 2026-07-13 | Current session: 6 | Commit: `77c2eed`**
+**Last updated: 2026-11-22 | Current session: 8 | Commit: see `git log -1` on `main`**
 
 > **For any agent reading this:** You are picking up an active, evolving project. Read this entire document before touching any code. You have explicit permission to ask clarifying questions or run a full logic pass before making changes. This is the single source of truth for context, decisions, architecture, and current state.
 
@@ -8,6 +8,10 @@
 ## 1. What Is CourtFlow?
 
 CourtFlow is a **mobile-first internal basketball training web app** for two trainers — **Amiel Terry** and **Derek** at Mason & Terry Training. It is **not** a commercial product. It is a personal internal tool built to be used **courtside on an iPhone** during actual training sessions.
+
+**Two apps, one codebase:**
+1. **CourtFlow (trainer app)** — `courtflowhoops.com`. Everything in sections 1–15 below.
+2. **CourtFlow Hoops Runs** — `runs.courtflowhoops.com`. Amiel's invite-only open-gym pickup runs (adult + youth HS/MS): public calendar, join + pay, admin. Lives in `src/runs/`. **See section 17.**
 
 **The vibe:** Fast, clean, no fluff. Simple > clever. Every UI decision should start with "how does this feel on a phone?" The app needs to work in one hand while Amiel is watching an athlete drill.
 
@@ -25,13 +29,18 @@ CourtFlow is a **mobile-first internal basketball training web app** for two tra
 
 | Layer | Tool | Version |
 |-------|------|---------|
-| Frontend | React | 18 |
+| Frontend | React | 19 |
 | Build tool | Vite | 5 |
 | Styling | Tailwind CSS | v3 (dark mode via `class` strategy) |
-| Routing | React Router | v6 |
+| Routing | React Router | v7 |
 | Database / Auth | Supabase | `@supabase/supabase-js` |
 | Drag & drop | dnd-kit | `@dnd-kit/core`, `/sortable`, `/utilities` |
 | Email notifications | Web3Forms | Client-side fetch, no SDK |
+| Server functions (runs) | Supabase Edge Functions (Deno) | `supabase/functions/` — deploy with `--use-api` (no Docker) |
+| SMS (runs) | Twilio | via edge functions; number +1 725-543-9054 |
+| Push notifications (runs) | Web Push (VAPID) | `npm:web-push` in edge function; `public/runs-sw.js` |
+| Subscriptions (runs) | Stripe (CourtFlow LLC) | Payment Links + webhook → edge function |
+| Scheduled jobs (runs) | pg_cron + pg_net | nightly reminder texts |
 | Deployment | Netlify | Build: `npm run build`, publish: `dist/` |
 | Node | 20.13.1 | Pinned in `netlify.toml` |
 
@@ -60,6 +69,8 @@ CourtFlow is a **mobile-first internal basketball training web app** for two tra
 | `session_drills` | Drills in a session with order, notes, reps, makes, duration |
 | `intake_submissions` | Parent intake form submissions (pending review) |
 | `player_rules` | Per-athlete rules (ordered list, stored separate from athletes table) |
+| `gyms` | Locations (name, address, maps_url). Used by trainer sessions **and** runs |
+| `runs`, `run_players`, `run_signups`, `run_invites`, `run_settings`, `run_push_subscriptions` | Runs site — see section 17 |
 
 ### Key Athletes Table Columns
 ```
@@ -122,6 +133,17 @@ supabase/migrations/
   20260714000000_player_rules.sql            # player_rules table + RLS
   20260714000001_add_drills_and_chase_rules.sql # 112+ drills seeded, Chase's rules, live action category
   20260714000002_gender.sql                  # gender column on athletes + intake_submissions
+  20260715000000_drill_video_url.sql         # drills.video_url
+  20260816000000_gyms.sql                    # gyms table + sessions.gym_id
+  20261121000000_runs.sql                    # Runs site: tables, RLS, public RPCs
+  20261122000000_run_notify_email.sql        # run_settings.notify_email
+  20261122000001_run_push.sql                # run_push_subscriptions, run_players.notified_at
+  20261122000002_run_reminders.sql           # run_signups.reminded_at + pg_cron nightly job
+  20261122000003_run_divisions_unlimited.sql # adult/youth divisions, Unlimited membership
+  20261122000004_run_sms_opt_in.sql          # run_players.sms_opt_in (A2P consent)
+  20261122000005_run_stripe_customer.sql     # run_players.stripe_customer_id
+  20261122000006_run_player_levels.sql       # level adult/hs/ms, show_in_list, phone rules, Chase import
+  20261122000007_run_payment_notify.sql      # run_signups.payment_notified_at
 ```
 
 All migrations have been applied to the live Supabase project.
@@ -150,7 +172,8 @@ All migrations have been applied to the live Supabase project.
 
 ## 5. Deployment
 
-- **Live URL:** `https://rad-chaja-b7245c.netlify.app`
+- **Live URLs:** `https://courtflowhoops.com` (trainer app) and `https://runs.courtflowhoops.com` (runs site) — same Netlify site (`rad-chaja-b7245c`), `runs.` is a domain alias. `src/main.jsx` picks the app by hostname.
+- **DNS:** Route53 in Amiel's AWS account (zone `courtflowhoops.com`). `runs` CNAME → `rad-chaja-b7245c.netlify.app`. Note: the domain is **courtflowhoops.com**, not courtflow.app.
 - **GitHub repo:** `https://github.com/amielterry26/courtflow`
 - **CI/CD:** GitHub → Netlify auto-deploy is now live (push to `main` triggers deploy)
 - **Build:** `npm run build` → output in `dist/`
@@ -195,12 +218,22 @@ courtflow/
 │   │   ├── SessionForm.jsx          # Create/edit session + athlete multi-picker
 │   │   ├── Intake.jsx               # Trainer intake review panel
 │   │   ├── IntakeForm.jsx           # Public form (gender field required, Web3Forms email)
+│   │   ├── Gyms.jsx                 # Locations management (/gyms)
 │   │   └── WeeklySchedule.jsx       # Week view calendar
+│   ├── runs/                        # Runs site (runs.courtflowhoops.com) — see section 17
+│   │   ├── main.js                  # fonts, title, theme, icons; exports App
+│   │   ├── App.jsx                  # routes
+│   │   ├── lib/                     # dates, me (localStorage), pay, push, notify, theme, division, adminDivision
+│   │   ├── components/              # Calendar, RunCard, JoinSheet, PayInstructions, ShareSheet, SiteHeader,
+│   │   │                            # UnlimitedPill, PlaceSearch, PushSetup, SmsConsent, ThemeToggle, CopyButton
+│   │   └── pages/                   # Home, Unlimited, Invite, Legal (privacy/terms/sms), admin/*
 │   ├── App.jsx
 │   ├── main.jsx
 │   └── index.css
+├── public/runs-sw.js, runs-admin.webmanifest, runs-icon-*.png   # runs admin PWA + push
 ├── supabase/
-│   └── migrations/                  # All 7 migration files (all applied to prod)
+│   ├── migrations/                  # All applied to prod
+│   └── functions/                   # runs-notify, runs-sms, runs-stripe, _shared/sms.ts
 ├── AGENT_HANDOFF.md                 # This file
 ├── index.html
 ├── vite.config.js
@@ -240,6 +273,7 @@ courtflow/
 | `/sessions/:id` | SessionDetail.jsx |
 | `/sessions/:id/edit` | SessionForm.jsx |
 | `/intake` | Intake.jsx |
+| `/gyms` | Gyms.jsx |
 
 ---
 
@@ -302,6 +336,13 @@ The bottom nav is a **floating pill/dock** (not full-width). It's fixed at `bott
 - **Apple Calendar fixed:** Replaced broken `data:text/calendar` approach with `navigator.share()` + ICS file. Opens iOS share sheet → "Add to Calendar". Falls back to blob URL on desktop.
 - **Theme:** Added `MediaQueryList` listener — if no localStorage override, app follows OS theme changes in real time
 - **Overscroll background:** `document.documentElement.style.backgroundColor` + `document.body.style.backgroundColor` set on every theme change (`#09090b` dark / `#fafafa` light) — fixes iOS rubber-band white flash
+
+### Session 7 — Gyms (Aug 2026)
+- `gyms` table, `/gyms` page, gym dropdown on sessions. Removed Google sign-in button.
+
+### Session 8 — CourtFlow Hoops Runs (Nov 2026)
+- Built the runs site end to end (section 17): calendar, join/pay flow, invites, requests, admin, adult/youth divisions, Unlimited membership via Stripe, push notifications, Twilio texts, legal pages for A2P.
+- Trainer app: `src/main.jsx` now lazy-loads either app by hostname; service worker only registers for the trainer app.
 
 ---
 
@@ -392,7 +433,7 @@ The old `window.location.href = 'data:text/calendar...'` approach was removed �
 | 3 | No error boundaries | Low | Silent failures if Supabase is down |
 | 4 | No push notifications to parents | Future | "Session scheduled for Friday" |
 | 5 | No PWA/offline support | Future | Courtside connectivity can be spotty |
-| 6 | No custom domain | Backlog | Still on `rad-chaja-b7245c.netlify.app` |
+| 6 | ~~No custom domain~~ | Done | `courtflowhoops.com` |
 | 7 | Intake → Athlete: gender/grade not auto-populated | Low | When approving an intake, the new athlete form could pre-fill from intake submission |
 | 8 | Drill library has no read-only view from session context | Low | From SessionDetail, drills aren't linked to DrillDetail |
 | 9 | AthletePublicView player rules not shown | Low | Parent view doesn't show player rules — may be intentional |
@@ -459,4 +500,61 @@ These were discussed but intentionally left out of v1. All are valid ideas for f
 
 9. **All migrations go in `supabase/migrations/`.** Use `npx supabase db push --linked` to apply them. Use timestamp format `YYYYMMDDHHMMSS_description.sql`.
 
-10. **Current commit:** `77c2eed` (Session 6). The app is fully functional and deployed.
+10. **Current state:** Session 8. Both apps are live and auto-deploy from `main`.
+
+11. **Never do blind substring find/replace across files.** A color rename `ember`→`hoop` once silently turned `member` into `mhoop` and broke saving settings. Use word boundaries.
+
+12. **Writing runs data from the CLI** (e.g. settings): fetch the service role key with `supabase projects api-keys --project-ref hmqeakjpstjgsdhmtobe -o json` and PATCH the REST API. Never commit it. There's no `supabase db query` in the installed CLI (v2.75).
+
+13. **Edge functions:** `supabase functions deploy <name> --use-api` (add `--no-verify-jwt` for `runs-sms` and `runs-stripe`). Secrets: `supabase secrets set KEY=value`.
+
+---
+
+## 17. CourtFlow Hoops Runs (runs.courtflowhoops.com)
+
+Invite-only open-gym pickup runs Amiel hosts (often every other Sunday). Players never log in. Amiel (and Derek) use `/admin` with their CourtFlow login.
+
+### Design
+Dark "night court" theme by default with light mode (follows the phone **every time the app opens**; the ☀️/🌙 toggle only lasts the visit via `sessionStorage`). Fonts: Big Shoulders Display + Inter. Accent orange. Palette is CSS variables in `src/index.css` (`:root` light, `.dark` dark) mapped to Tailwind tokens `court/surface/raised/line/fg/muted/hoop/good/bad/warn`. Amiel explicitly wanted it to **not** look like his friend's farmersmarket.vegas site (cream + serif + green) — don't drift back.
+
+### Divisions
+`adult` at `/`, `youth` (HS/MS) at `/youth`. `division` column on `runs`, `run_players`, `run_invites`, `run_settings` (one settings row each). Locations (`gyms`) shared. Admin has its own Adult/Youth switch (`AdminDivision` context).
+
+### Players (`run_players`)
+- `status` pending/approved/denied · `level` adult/hs/ms (dropdown optgroups) · `show_in_list` (admin hides names) · `is_member` (Unlimited) · `sms_opt_in` · `stripe_customer_id`
+- `phone` nullable, **not unique**: admin can add siblings sharing a parent's phone, kids without phones, and the same person in both divisions (e.g. Chase Gardner). The **public** `runs_request` RPC rejects any already-registered phone.
+
+### Public flow
+1. Calendar → day → run card (time, location, price, maps, share).
+2. **Join this run** → pick name (grouped dropdown; names already paid for that run are disabled) → pick payment (Cash App, Apple Cash, Zelle, cash; Unlimited members skip) → `runs_join` returns a signup token stored in localStorage.
+3. Card shows **"⏳ Spot held · pay to lock it in"** until Amiel ticks paid; **"✓ You're in"** only when `paid` (member joins are paid automatically). Roster (first name + last initial) only visible once paid.
+4. New players → **Request to join** (name, phone, school level for youth, SMS consent) → pending. Invite links (`/invite/:token`) approve instantly.
+- Payment handles live in `run_settings` (Cash App `$amielterry0`, Zelle, Apple Cash phone). None of these apps allow auto-send or payment confirmation from a website — Amiel confirms manually and declined a Stripe per-run option.
+
+### Notifications to Amiel (`runs-notify` edge function)
+- New request → push to every subscribed device + SMS to `RUNS_ADMIN_PHONE` + Web3Forms email (client-side).
+- Player picks a payment method → push + SMS "💵 X is paying $12 via …" (once, `payment_notified_at`).
+- App icon badge = pending requests + unpaid upcoming signups. Admin is installable (Add to Home Screen from `/admin` → `runs-admin.webmanifest`); turn on notifications in Requests/Settings.
+
+### Texts to players (`runs-sms` edge function, only if `sms_opt_in`)
+- `approved` — when Amiel approves (waits for carrier delivery status before reporting success)
+- `paid` — when Amiel ticks paid ("✅ Payment received … you're in")
+- `remind_run` — manual button on a run
+- `reminders` — pg_cron job `runs-day-before-reminders` at 01:00 UTC; acts only 4–9pm Pacific; once per signup (`reminded_at`)
+
+### Unlimited membership (Stripe, account **CourtFlow LLC** `acct_1U31p9B97JkRC1VY`)
+- $22/mo adult, $24/mo youth — live Payment Links stored in `run_settings.stripe_membership_url`; shared customer-portal login link for cancelling.
+- Webhook `we_1UeRPLB97JkRC1VYTFKYNvTf` → `runs-stripe` (HMAC-verified with `STRIPE_WEBHOOK_SECRET`): checkout → `is_member = true` (match by `client_reference_id`, then phone + division; creates the player if new); subscription updated/deleted → sync.
+- Floating "♾ Unlimited runs" pill → `/unlimited` page.
+- The Stripe CLI's live key is restricted; Amiel granted write on products, prices, payment links, webhooks, portal.
+
+### Secrets (Supabase function secrets — names only)
+`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` (public half also hardcoded in `src/runs/lib/push.js` — rotate together), `RUNS_ADMIN_PHONE`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`, `STRIPE_WEBHOOK_SECRET`.
+
+### Legal / A2P
+`/privacy`, `/terms` (SMS Terms section), `/sms` (opt-in proof) exist for Twilio A2P 10DLC registration.
+
+### Open items (as of 2026-11-22)
+- **Twilio A2P 10DLC campaign approval pending** — until approved, every SMS fails with error 30034 (push notifications work). Once approved, send a test text to 725-285-5684.
+- Location search (`PlaceSearch`) uses free Photon/OpenStreetMap — decent but misses some small gyms. Apple MapKit would need an Apple Developer token; Google Places a billed key.
+- Admin pages were only code-reviewed for mobile (can't log in headless) — public pages were screenshot-verified at 390px.
