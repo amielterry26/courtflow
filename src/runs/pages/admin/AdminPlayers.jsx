@@ -74,7 +74,7 @@ export default function AdminPlayers() {
       {/* Invite links */}
       <section>
         <h2 className="label">Invite links</h2>
-        <p className="mb-3 text-sm text-stone-500">Anyone who signs up through an invite link is approved right away.</p>
+        <p className="mb-3 text-sm text-muted">Anyone who signs up through an invite link is approved right away.</p>
         <div className="mb-3 flex gap-2">
           <input className="input flex-1 py-2 text-sm" placeholder="Who's it for? (optional)" value={inviteLabel}
             onChange={e => setInviteLabel(e.target.value)} />
@@ -89,9 +89,9 @@ export default function AdminPlayers() {
                   <span className="text-sm font-medium">{i.label || 'General invite'}</span>
                   <div className="flex gap-3 text-xs">
                     {typeof navigator !== 'undefined' && navigator.share && (
-                      <button onClick={() => shareInvite(url)} className="font-medium text-ember">Share</button>
+                      <button onClick={() => shareInvite(url)} className="font-medium text-hoop">Share</button>
                     )}
-                    <button onClick={() => deleteInvite(i.token)} className="text-stone-400 hover:text-red-500">Turn off</button>
+                    <button onClick={() => deleteInvite(i.token)} className="text-muted/80 hover:text-red-500">Turn off</button>
                   </div>
                 </div>
                 <CopyButton value={url} label={url.replace(/^https?:\/\//, '')} />
@@ -118,7 +118,7 @@ export default function AdminPlayers() {
             </div>
             <input required type="tel" inputMode="tel" className="input" placeholder="Phone" value={form.phone}
               onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-400">{error}</p>}
             <div className="flex gap-2">
               <button className="btn-primary flex-1">Add player</button>
               <button type="button" onClick={() => { setAdding(false); setError('') }} className="btn-ghost px-5">Cancel</button>
@@ -128,27 +128,27 @@ export default function AdminPlayers() {
 
         <input className="input mb-3 py-2 text-sm" placeholder="Search players" value={search} onChange={e => setSearch(e.target.value)} />
 
-        <div className="card divide-y divide-sand-line">
-          {shown.length === 0 && <p className="p-6 text-center text-sm text-stone-500">No players yet.</p>}
+        <div className="card divide-y divide-line">
+          {shown.length === 0 && <p className="p-6 text-center text-sm text-muted">No players yet.</p>}
           {shown.map(p => (
             <div key={p.id} className="flex items-center gap-3 p-3">
               <div className="min-w-0 flex-1">
-                <p className={`truncate font-medium ${p.status === 'denied' ? 'text-stone-400 line-through' : ''}`}>
+                <p className={`truncate font-medium ${p.status === 'denied' ? 'text-muted/80 line-through' : ''}`}>
                   {p.first_name} {p.last_name}
                 </p>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-muted">
                   <a href={`sms:+1${p.phone}`}>{formatPhone(p.phone)}</a> · {p.run_signups.length} run{p.run_signups.length === 1 ? '' : 's'}
                 </p>
               </div>
               {p.status === 'denied' ? (
-                <button onClick={() => update(p, { status: 'approved' })} className="text-xs font-medium text-ember">Approve</button>
+                <button onClick={() => update(p, { status: 'approved' })} className="text-xs font-medium text-hoop">Approve</button>
               ) : (
-                <button onClick={() => update(p, { is_member: !p.is_member })}
-                  className={`rounded-full border px-2.5 py-1 text-xs font-medium ${p.is_member ? 'border-ember bg-ember-soft text-ember-dark' : 'border-sand-line text-stone-500'}`}>
-                  {p.is_member ? '⭐ Member' : 'Member?'}
+                <button onClick={() => update(p, { is_mhoop: !p.is_mhoop })}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium ${p.is_mhoop ? 'border-hoop bg-hoop-soft text-hoop-dark' : 'border-line text-muted'}`}>
+                  {p.is_mhoop ? '⭐ Mhoop' : 'Mhoop?'}
                 </button>
               )}
-              <button onClick={() => removePlayer(p)} aria-label="Delete" className="px-1 text-lg leading-none text-stone-300 hover:text-red-500">×</button>
+              <button onClick={() => removePlayer(p)} aria-label="Delete" className="px-1 text-lg leading-none text-muted/50 hover:text-red-500">×</button>
             </div>
           ))}
         </div>

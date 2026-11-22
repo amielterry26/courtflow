@@ -23,10 +23,10 @@ export default function AdminRuns() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex rounded-full border border-sand-line bg-white p-0.5 text-sm">
+        <div className="flex rounded-full border border-line bg-surface p-0.5 text-sm">
           {[['Upcoming', false], ['Past', true]].map(([label, past]) => (
             <button key={label} onClick={() => setShowPast(past)}
-              className={`rounded-full px-3 py-1 ${showPast === past ? 'bg-ink text-white' : 'text-stone-600'}`}>{label}</button>
+              className={`rounded-full px-3 py-1 ${showPast === past ? 'bg-surface border border-hoop-line text-white' : 'text-fg/75'}`}>{label}</button>
           ))}
         </div>
         {!adding && <button onClick={() => setAdding(true)} className="btn-primary py-2">+ New run</button>}
@@ -36,22 +36,22 @@ export default function AdminRuns() {
 
       <div className="space-y-2.5">
         {runs.length === 0 && (
-          <div className="card p-8 text-center text-sm text-stone-500">{showPast ? 'No past runs.' : 'No upcoming runs. Add one.'}</div>
+          <div className="card p-8 text-center text-sm text-muted">{showPast ? 'No past runs.' : 'No upcoming runs. Add one.'}</div>
         )}
         {runs.map(r => {
           const going = r.run_signups.length
           const paid = r.run_signups.filter(s => s.paid).length
           return (
-            <Link key={r.id} to={`/admin/runs/${r.id}`} className="card flex items-center justify-between gap-3 p-4 hover:bg-white">
+            <Link key={r.id} to={`/admin/runs/${r.id}`} className="card flex items-center justify-between gap-3 p-4 hover:bg-line">
               <div className="min-w-0">
                 <p className="font-semibold">
-                  {shortDate(r.run_date)} {r.cancelled && <span className="ml-1 text-xs font-medium text-red-600">Cancelled</span>}
+                  {shortDate(r.run_date)} {r.cancelled && <span className="ml-1 text-xs font-medium text-red-400">Cancelled</span>}
                 </p>
-                <p className="truncate text-sm text-stone-500">{timeRange(r.start_time, r.end_time)} · {r.gyms?.name ?? 'No location'}</p>
+                <p className="truncate text-sm text-muted">{timeRange(r.start_time, r.end_time)} · {r.gyms?.name ?? 'No location'}</p>
               </div>
               <div className="shrink-0 text-right">
                 <p className="text-sm font-semibold">{going}{r.capacity ? `/${r.capacity}` : ''} going</p>
-                <p className={`text-xs ${paid < going ? 'text-ember' : 'text-green-700'}`}>{paid} paid</p>
+                <p className={`text-xs ${paid < going ? 'text-hoop' : 'text-green-400'}`}>{paid} paid</p>
               </div>
             </Link>
           )

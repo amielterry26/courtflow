@@ -41,7 +41,7 @@ export default function AdminLocations() {
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm text-stone-500">Add the full address so Directions and the map work.</p>
+        <p className="text-sm text-muted">Add the full address so Directions and the map work.</p>
         {!showForm && <button onClick={() => setShowForm(true)} className="btn-primary shrink-0 py-2">+ Location</button>}
       </div>
 
@@ -63,7 +63,7 @@ export default function AdminLocations() {
           <div key={g.id} className="card flex items-start justify-between gap-3 p-4">
             <div className="min-w-0">
               <p className="font-semibold">{g.name}</p>
-              <p className={`text-sm ${g.address ? 'text-stone-500' : 'text-ember'}`}>{g.address || 'No address yet'}</p>
+              <p className={`text-sm ${g.address ? 'text-muted' : 'text-hoop'}`}>{g.address || 'No address yet'}</p>
             </div>
             <button onClick={() => startEdit(g)} className="btn-ghost shrink-0 py-1.5 text-xs">Edit</button>
           </div>

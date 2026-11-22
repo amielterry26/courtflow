@@ -32,26 +32,26 @@ export default function Admin() {
       .then(({ count }) => setPending(count ?? 0))
   }, [user])
 
-  if (user === undefined) return <div className="min-h-screen bg-cream" />
+  if (user === undefined) return <div className="min-h-screen bg-court" />
   if (!user) return <Login />
 
   return (
-    <div className="min-h-screen bg-cream">
-      <header className="sticky top-0 z-40 border-b border-sand-line bg-cream/90 backdrop-blur">
+    <div className="min-h-screen bg-court">
+      <header className="sticky top-0 z-40 border-b border-line bg-court/90 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-1.5 font-serif text-[17px] font-semibold">
-            <span className="text-ember">●</span> Runs admin
+          <Link to="/" className="flex items-center gap-1.5 font-display text-[17px] font-extrabold uppercase">
+            <span className="text-hoop">●</span> CourtFlow Hoops <span className="text-muted">· Runs admin</span>
           </Link>
-          <button onClick={() => supabase.auth.signOut()} className="text-sm text-stone-500">Sign out</button>
+          <button onClick={() => supabase.auth.signOut()} className="text-sm text-muted">Sign out</button>
         </div>
         <nav className="mx-auto flex max-w-2xl gap-1 overflow-x-auto px-4 pb-2">
           {tabs.map(t => (
             <NavLink key={t.to} to={t.to} end={t.end}
               className={({ isActive }) => `whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition
-                ${isActive ? 'bg-ember text-white' : 'text-stone-600 hover:bg-sand'}`}>
+                ${isActive ? 'bg-hoop text-white' : 'text-fg/75 hover:bg-raised'}`}>
               {t.label}
               {t.label === 'Requests' && pending > 0 && (
-                <span className="ml-1.5 rounded-full bg-white/90 px-1.5 text-xs text-ember">{pending}</span>
+                <span className="ml-1.5 rounded-full bg-surface px-1.5 text-xs text-hoop">{pending}</span>
               )}
             </NavLink>
           ))}
@@ -88,9 +88,9 @@ function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream px-4">
+    <div className="flex min-h-screen items-center justify-center bg-court px-4">
       <form onSubmit={handleSubmit} className="card w-full max-w-sm space-y-4 p-6">
-        <h1 className="text-center font-serif text-3xl font-semibold">Runs <span className="italic text-ember">admin</span></h1>
+        <h1 className="text-center font-display text-3xl font-extrabold uppercase">Runs <span className="text-hoop">admin</span></h1>
         <div>
           <label className="label" htmlFor="email">Email</label>
           <input id="email" type="email" required className="input" value={email} onChange={e => setEmail(e.target.value)} />
@@ -99,7 +99,7 @@ function Login() {
           <label className="label" htmlFor="pw">Password</label>
           <input id="pw" type="password" required className="input" value={password} onChange={e => setPassword(e.target.value)} />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
         <button disabled={loading} className="btn-primary w-full py-3">{loading ? 'Signing in…' : 'Sign in'}</button>
       </form>
     </div>

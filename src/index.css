@@ -14,13 +14,13 @@
 /* Runs site (src/runs) */
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-medium transition-colors disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-40;
   }
-  .btn-primary { @apply btn bg-ember text-white hover:bg-ember-dark; }
-  .btn-ghost { @apply btn border border-sand-line bg-white/70 text-ink hover:bg-white; }
-  .card { @apply rounded-3xl border border-sand-line bg-white/80 shadow-[0_1px_2px_rgba(60,40,20,0.04)]; }
+  .btn-primary { @apply btn bg-hoop text-white hover:bg-hoop-dark; }
+  .btn-ghost { @apply btn border border-line bg-raised text-fg hover:bg-line; }
+  .card { @apply rounded-2xl border border-line bg-surface; }
   .input {
-    @apply w-full rounded-xl border border-sand-line bg-white px-3 py-2.5 text-base text-ink placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-ember/40;
+    @apply w-full rounded-xl border border-line bg-raised px-3 py-2.5 text-base text-fg placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-hoop/50 [color-scheme:dark];
   }
-  .label { @apply mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-500; }
+  .label { @apply mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-muted; }
 }

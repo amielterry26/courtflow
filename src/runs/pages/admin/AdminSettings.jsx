@@ -8,13 +8,15 @@ const FIELDS = [
   { key: 'cashapp_tag', label: 'Cash App $cashtag', placeholder: '$yourtag' },
   { key: 'apple_cash_phone', label: 'Apple Cash phone number', placeholder: '(702) 555-1234', type: 'tel' },
   { key: 'zelle', label: 'Zelle phone or email', placeholder: '(702) 555-1234' },
+  { section: 'Notifications', hint: 'Join requests are emailed to the CourtFlow inbox. Add another email (or your phone carrier\'s text-email) to get a copy.' },
+  { key: 'notify_email', label: 'Also send requests to', placeholder: 'you@gmail.com' },
   { section: 'Pricing' },
   { key: 'default_price', label: 'Default price per run ($)', type: 'number' },
-  { section: 'Membership (Stripe)', hint: 'The membership card shows on the site once the Payment Link is filled in.' },
-  { key: 'stripe_membership_url', label: 'Stripe Payment Link', placeholder: 'https://buy.stripe.com/...' },
+  { section: 'Mhoopship (Stripe)', hint: 'The mhoopship card shows on the site once the Payment Link is filled in.' },
+  { key: 'stripe_mhoopship_url', label: 'Stripe Payment Link', placeholder: 'https://buy.stripe.com/...' },
   { key: 'stripe_portal_url', label: 'Stripe customer portal link (cancel)', placeholder: 'https://billing.stripe.com/p/login/...' },
-  { key: 'member_price', label: 'Membership price per month ($)', type: 'number' },
-  { key: 'member_runs_per_month', label: 'Runs included per month', type: 'number' },
+  { key: 'mhoop_price', label: 'Mhoopship price per month ($)', type: 'number' },
+  { key: 'mhoop_runs_per_month', label: 'Runs included per month', type: 'number' },
 ]
 
 export default function AdminSettings() {
@@ -47,14 +49,14 @@ export default function AdminSettings() {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  if (!form) return <p className="text-sm text-stone-500">Loading…</p>
+  if (!form) return <p className="text-sm text-muted">Loading…</p>
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {FIELDS.map(f => f.section ? (
         <div key={f.section} className="pt-4 first:pt-0">
-          <h2 className="font-serif text-xl font-semibold">{f.section}</h2>
-          {f.hint && <p className="text-sm text-stone-500">{f.hint}</p>}
+          <h2 className="font-display text-xl font-extrabold uppercase">{f.section}</h2>
+          {f.hint && <p className="text-sm text-muted">{f.hint}</p>}
         </div>
       ) : (
         <div key={f.key}>
@@ -64,7 +66,7 @@ export default function AdminSettings() {
             value={form[f.key] ?? ''} onChange={e => setForm(s => ({ ...s, [f.key]: e.target.value }))} />
         </div>
       ))}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
       <div className="sticky bottom-4 pt-2">
         <button disabled={saving} className="btn-primary w-full py-3 text-base shadow-lg">
           {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save settings'}

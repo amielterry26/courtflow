@@ -7,9 +7,9 @@ export default function PayInstructions({ method, run, me }) {
   const p = payInstructions(method, run, me, settings)
   return (
     <div className="space-y-2.5">
-      {p.steps.map(s => <p key={s} className="text-sm text-stone-600">{s}</p>)}
+      {p.steps.map(s => <p key={s} className="text-sm text-fg/75">{s}</p>)}
       {p.copyValue && <CopyButton value={p.copyValue} />}
-      {p.extra && <p className="text-sm text-stone-600">{p.extra}</p>}
+      {p.extra && <p className="text-sm text-fg/75">{p.extra}</p>}
       {p.copy && <CopyButton value={p.copy} />}
       {p.cta && (
         <a href={p.href} target="_blank" rel="noopener noreferrer" className="btn-primary w-full py-3 text-base">

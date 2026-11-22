@@ -18,7 +18,7 @@ export default function AdminRun() {
 
   async function load() {
     const { data } = await supabase.from('runs')
-      .select('*, gyms(name), run_signups(id, paid, payment_method, created_at, run_players(id, first_name, last_name, phone, status, is_member))')
+      .select('*, gyms(name), run_signups(id, paid, payment_method, created_at, run_players(id, first_name, last_name, phone, status, is_mhoop))')
       .eq('id', id).single()
     setRun(data)
     const { data: all } = await supabase.from('run_players').select('id, first_name, last_name').eq('status', 'approved').order('first_name')
@@ -60,7 +60,7 @@ export default function AdminRun() {
     navigate('/admin')
   }
 
-  if (!run) return <p className="text-sm text-stone-500">Loading…</p>
+  if (!run) return <p className="text-sm text-muted">Loading…</p>
 
   const signups = [...run.run_signups].sort((a, b) => a.created_at.localeCompare(b.created_at))
   const paidCount = signups.filter(s => s.paid).length
@@ -70,7 +70,7 @@ export default function AdminRun() {
 
   return (
     <div>
-      <button onClick={() => navigate('/admin')} className="mb-3 text-sm text-stone-500">← Runs</button>
+      <button onClick={() => navigate('/admin')} className="mb-3 text-sm text-muted">← Runs</button>
 
       {editing ? (
         <RunForm run={run} onDone={() => { setEditing(false); load() }} />
@@ -78,14 +78,14 @@ export default function AdminRun() {
         <div className="card mb-4 p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h1 className="font-serif text-2xl font-semibold">{shortDate(run.run_date)}</h1>
-              <p className="text-sm text-stone-500">{timeRange(run.start_time, run.end_time)} · {run.gyms?.name ?? 'No location'} · ${Number(run.price)}</p>
-              {run.notes && <p className="mt-1 text-sm text-stone-500">{run.notes}</p>}
-              {run.cancelled && <p className="mt-1 text-sm font-medium text-red-600">Cancelled</p>}
+              <h1 className="font-display text-2xl font-extrabold uppercase">{shortDate(run.run_date)}</h1>
+              <p className="text-sm text-muted">{timeRange(run.start_time, run.end_time)} · {run.gyms?.name ?? 'No location'} · ${Number(run.price)}</p>
+              {run.notes && <p className="mt-1 text-sm text-muted">{run.notes}</p>}
+              {run.cancelled && <p className="mt-1 text-sm font-medium text-red-400">Cancelled</p>}
             </div>
             <button onClick={() => setEditing(true)} className="btn-ghost py-1.5 text-xs">Edit</button>
           </div>
-          <div className="mt-4 grid grid-cols-3 divide-x divide-sand-line rounded-2xl bg-sand text-center">
+          <div className="mt-4 grid grid-cols-3 divide-x divide-line rounded-2xl bg-raised text-center">
             <Mini value={`${signups.length}${run.capacity ? `/${run.capacity}` : ''}`} label="Going" />
             <Mini value={paidCount} label="Paid" />
             <Mini value={`$${paidCount * Number(run.price)}`} label="Collected" />
@@ -95,37 +95,37 @@ export default function AdminRun() {
 
       <div className="mb-2 flex items-center justify-between">
         <h2 className="label mb-0">Roster</h2>
-        <label className="flex items-center gap-2 text-sm text-stone-600">
-          <input type="checkbox" checked={unpaidOnly} onChange={e => setUnpaidOnly(e.target.checked)} className="accent-ember" />
+        <label className="flex items-center gap-2 text-sm text-fg/75">
+          <input type="checkbox" checked={unpaidOnly} onChange={e => setUnpaidOnly(e.target.checked)} className="accent-hoop" />
           Unpaid only
         </label>
       </div>
 
-      <div className="card divide-y divide-sand-line">
-        {shown.length === 0 && <p className="p-6 text-center text-sm text-stone-500">{unpaidOnly ? 'Everyone has paid 🎉' : 'Nobody yet.'}</p>}
+      <div className="card divide-y divide-line">
+        {shown.length === 0 && <p className="p-6 text-center text-sm text-muted">{unpaidOnly ? 'Everyone has paid 🎉' : 'Nobody yet.'}</p>}
         {shown.map(s => {
           const p = s.run_players
           return (
             <div key={s.id} className="flex items-center gap-3 p-3">
               <button onClick={() => togglePaid(s)} aria-label={s.paid ? 'Mark unpaid' : 'Mark paid'}
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-2 text-sm font-bold transition
-                  ${s.paid ? 'border-green-600 bg-green-600 text-white' : 'border-sand-line bg-white text-transparent'}`}>
+                  ${s.paid ? 'border-green-600 bg-green-600 text-white' : 'border-line bg-surface text-transparent'}`}>
                 ✓
               </button>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">
                   {p.first_name} {p.last_name}
-                  {p.is_member && <span className="ml-1.5 text-xs text-ember">⭐</span>}
-                  {p.status === 'pending' && <span className="ml-1.5 rounded bg-amber-100 px-1.5 text-xs text-amber-800">Request</span>}
+                  {p.is_mhoop && <span className="ml-1.5 text-xs text-hoop">⭐</span>}
+                  {p.status === 'pending' && <span className="ml-1.5 rounded bg-amber-500/15 px-1.5 text-xs text-amber-300">Request</span>}
                 </p>
-                <a href={`sms:+1${p.phone}`} className="text-xs text-stone-500">{formatPhone(p.phone)}</a>
+                <a href={`sms:+1${p.phone}`} className="text-xs text-muted">{formatPhone(p.phone)}</a>
               </div>
               <select value={s.payment_method ?? ''} onChange={e => setMethod(s, e.target.value)}
-                className="rounded-lg border border-sand-line bg-white px-2 py-1 text-xs">
+                className="rounded-lg border border-line bg-surface px-2 py-1 text-xs">
                 <option value="">—</option>
                 {Object.entries(METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
-              <button onClick={() => remove(s)} aria-label="Remove" className="px-1 text-lg leading-none text-stone-300 hover:text-red-500">×</button>
+              <button onClick={() => remove(s)} aria-label="Remove" className="px-1 text-lg leading-none text-muted/50 hover:text-red-500">×</button>
             </div>
           )
         })}
@@ -146,7 +146,7 @@ export default function AdminRun() {
 
       <div className="mt-8 flex gap-2">
         <button onClick={toggleCancelled} className="btn-ghost flex-1 text-sm">{run.cancelled ? 'Reopen run' : 'Cancel run'}</button>
-        <button onClick={deleteRun} className="btn flex-1 border border-red-200 text-sm text-red-600 hover:bg-red-50">Delete</button>
+        <button onClick={deleteRun} className="btn flex-1 border border-red-500/30 text-sm text-red-400 hover:bg-red-500/10">Delete</button>
       </div>
     </div>
   )
@@ -155,8 +155,8 @@ export default function AdminRun() {
 function Mini({ value, label }) {
   return (
     <div className="py-3">
-      <p className="font-serif text-xl font-semibold">{value}</p>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-stone-500">{label}</p>
+      <p className="font-display text-xl font-extrabold uppercase">{value}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted">{label}</p>
     </div>
   )
 }

@@ -25,24 +25,24 @@ export default function Invite() {
     setBusy(false)
     if (error) return setError(error.message)
     if (data.status !== 'approved') return setError("Something's off with your account — text Amiel.")
-    setMe({ player_id: data.player_id, first_name: data.first_name, last_name: data.last_name, is_member: data.is_member })
+    setMe({ player_id: data.player_id, first_name: data.first_name, last_name: data.last_name, is_mhoop: data.is_mhoop })
     navigate('/', { state: { welcome: `You're in, ${data.first_name}. Pick a run below.` } })
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cream px-4 py-10">
-      <div className="pointer-events-none fixed inset-x-0 top-0 h-[380px] bg-[radial-gradient(ellipse_at_20%_0%,rgba(234,138,72,0.22),transparent_55%),radial-gradient(ellipse_at_85%_0%,rgba(246,200,165,0.45),transparent_55%)]" />
+    <div className="flex min-h-screen items-center justify-center bg-court px-4 py-10">
+      <div className="pointer-events-none fixed inset-x-0 top-0 h-[380px] bg-[radial-gradient(ellipse_at_50%_0%,rgba(255,106,26,0.18),transparent_60%)]" />
       <div className="relative w-full max-w-sm">
         <div className="mb-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-stone-500">You've been invited</p>
-          <h1 className="mt-2 font-serif text-5xl font-bold leading-[0.95] tracking-tight">
-            Join the<br /><span className="italic text-ember">Runs</span>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-hoop">CourtFlow Hoops · You're invited</p>
+          <h1 className="mt-2 font-display text-7xl font-black uppercase leading-[0.85] tracking-tight">
+            Join the<br /><span className="text-hoop">Runs.</span>
           </h1>
-          <p className="mt-3 text-sm text-stone-600">Open gym pickup. Takes 10 seconds — just your name and number.</p>
+          <p className="mt-3 text-sm text-fg/75">Open gym pickup. Takes 10 seconds — just your name and number.</p>
         </div>
 
         {valid === false ? (
-          <div className="card p-6 text-center text-sm text-stone-600">This invite link isn't valid anymore. Ask for a new one.</div>
+          <div className="card p-6 text-center text-sm text-fg/75">This invite link isn't valid anymore. Ask for a new one.</div>
         ) : (
           <form onSubmit={submit} className="card space-y-3 p-5">
             <div className="grid grid-cols-2 gap-3">
@@ -62,7 +62,7 @@ export default function Invite() {
               <input id="phone" required type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="(702) 555-1234"
                 value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-400">{error}</p>}
             <button disabled={busy || valid !== true} className="btn-primary w-full py-3 text-base">
               {busy ? 'Joining…' : "I'm in"}
             </button>

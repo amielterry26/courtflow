@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { getMe, getToken } from '../lib/me'
-import { fromKey, timeRange, todayKey, shortDate } from '../lib/dates'
+import { fromKey, timeRange, todayKey } from '../lib/dates'
 import { mapsLinks, METHOD_LABELS } from '../lib/pay'
 import PayInstructions from './PayInstructions'
 
-function runStatus(run) {
+export function runStatus(run) {
   if (run.cancelled) return 'cancelled'
   const today = todayKey()
   if (run.run_date < today) return 'ended'
@@ -17,7 +17,7 @@ function runStatus(run) {
   return 'ended'
 }
 
-export default function RunCard({ run, onJoin, refreshKey }) {
+export default function RunCard({ run, onJoin, onShare, refreshKey }) {
   const [signup, setSignup] = useState(null)
   const [showMap, setShowMap] = useState(false)
   const [showPay, setShowPay] = useState(false)
@@ -33,97 +33,102 @@ export default function RunCard({ run, onJoin, refreshKey }) {
     supabase.rpc('runs_roster', { p_token: token }).then(({ data }) => setSignup(data))
   }, [token, refreshKey])
 
-  async function share() {
-    const text = `Pickup run ${shortDate(run.run_date)}, ${timeRange(run.start_time, run.end_time)} at ${run.gym_name ?? 'TBD'}`
-    if (navigator.share) {
-      try { await navigator.share({ title: 'Pickup run', text, url: window.location.origin }) } catch { /* dismissed */ }
-    } else {
-      await navigator.clipboard?.writeText(`${text} — ${window.location.origin}`)
-    }
-  }
-
   return (
-    <div className={`card p-5 text-center ${status === 'ended' || status === 'cancelled' ? 'opacity-70' : ''}`}>
-      <h3 className="font-serif text-xl font-semibold leading-snug">{run.gym_name || 'Location TBD'}</h3>
-      <p className="mt-0.5 font-semibold">{timeRange(run.start_time, run.end_time)}</p>
-      {run.gym_address && <p className="mt-0.5 text-sm text-stone-500">{run.gym_address}</p>}
-      {run.notes && <p className="mt-1 text-sm text-stone-500">{run.notes}</p>}
+    <div className={`card overflow-hidden ${open ? '' : 'opacity-60'}`}>
+      <div className="flex items-stretch">
+        <div className={`w-1.5 shrink-0 ${status === 'cancelled' ? 'bg-red-500' : open ? 'bg-hoop' : 'bg-line'}`} />
+        <div className="flex-1 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-display text-3xl font-extrabold uppercase leading-none tracking-tight">{timeRange(run.start_time, run.end_time)}</p>
+              <p className="mt-1.5 font-semibold">{run.gym_name || 'Location TBD'}</p>
+              {run.gym_address && <p className="text-sm text-muted">{run.gym_address}</p>}
+            </div>
+            <div className="shrink-0 rounded-xl bg-raised px-3 py-2 text-center">
+              <p className="font-display text-2xl font-extrabold leading-none text-hoop">${Number(run.price)}</p>
+              <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-muted">per run</p>
+            </div>
+          </div>
+          {run.notes && <p className="mt-2 text-sm text-fg/75">{run.notes}</p>}
 
-      <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-        <Chip tone="ember">${Number(run.price)}</Chip>
-        <Chip>{run.going} going</Chip>
-        {spotsLeft !== null && open && <Chip tone={full ? 'stone' : 'green'}>{full ? 'Full' : `${spotsLeft} spots left`}</Chip>}
-        {status === 'live' && <Chip tone="green"><Dot /> Happening now</Chip>}
-        {status === 'ended' && <Chip tone="stone">Ended</Chip>}
-        {status === 'cancelled' && <Chip tone="red">Cancelled</Chip>}
-      </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <Tag>{run.going} in</Tag>
+            {spotsLeft !== null && open && <Tag tone={full ? 'muted' : 'green'}>{full ? 'Full' : `${spotsLeft} spots left`}</Tag>}
+            {status === 'live' && <Tag tone="green">● Live now</Tag>}
+            {status === 'ended' && <Tag tone="muted">Ended</Tag>}
+            {status === 'cancelled' && <Tag tone="red">Cancelled</Tag>}
+          </div>
 
-      {open && (
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {signup ? (
-            <span className="btn border border-ember bg-ember-soft text-ember-dark">✓ You're in</span>
-          ) : (
-            <button onClick={onJoin} disabled={full} className="btn-primary px-6">{full ? 'Run is full' : "🏀 I'm in"}</button>
-          )}
-          <a href={maps.apple} target="_blank" rel="noopener noreferrer" className="btn-ghost">🧭 Apple Maps</a>
-          <a href={maps.google} target="_blank" rel="noopener noreferrer" className="btn-ghost">📍 Google Maps</a>
-          <button onClick={share} className="btn-ghost">↗ Share</button>
-        </div>
-      )}
-
-      {maps.embed && open && (
-        <div className="mt-3">
-          <button onClick={() => setShowMap(s => !s)} className="text-xs font-medium text-stone-500 underline underline-offset-2">
-            {showMap ? 'Hide map' : 'Show map'}
-          </button>
-          {showMap && (
-            <iframe title="Map" src={maps.embed} loading="lazy"
-              className="mt-2 h-48 w-full rounded-2xl border border-sand-line" />
-          )}
-        </div>
-      )}
-
-      {signup && (
-        <div className="mt-4 border-t border-sand-line pt-4 text-left">
-          {signup.paid ? (
+          {open && (
             <>
-              <p className="label text-center">Who's running · {signup.roster.length}</p>
-              <div className="flex flex-wrap justify-center gap-1.5">
-                {signup.roster.map((p, i) => (
-                  <span key={i} className="rounded-full bg-sand px-3 py-1 text-sm">{p.first_name} {p.last_initial}.</span>
-                ))}
+              <div className="mt-4">
+                {signup ? (
+                  <div className="flex items-center justify-center gap-2 rounded-xl border border-hoop-line bg-hoop-soft py-3 font-semibold text-hoop">
+                    ✓ You're in
+                  </div>
+                ) : (
+                  <button onClick={onJoin} disabled={full} className="btn-primary w-full py-3.5 text-base">
+                    {full ? 'Run is full' : 'Join this run'}
+                  </button>
+                )}
               </div>
-            </>
-          ) : (
-            <div className="text-center">
-              <p className="text-sm text-stone-600">
-                Payment pending{signup.payment_method ? ` (${METHOD_LABELS[signup.payment_method]})` : ''} — the roster unlocks once it's confirmed.
-              </p>
-              {signup.payment_method && getMe() && (
-                <button onClick={() => setShowPay(s => !s)} className="mt-2 text-sm font-medium text-ember">
-                  {showPay ? 'Hide' : 'How to pay'}
-                </button>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                <a href={maps.apple} target="_blank" rel="noopener noreferrer" className="btn-ghost px-2 text-xs">Apple Maps</a>
+                <a href={maps.google} target="_blank" rel="noopener noreferrer" className="btn-ghost px-2 text-xs">Google Maps</a>
+                <button onClick={onShare} className="btn-ghost px-2 text-xs">↗ Share</button>
+              </div>
+              {maps.embed && (
+                <div className="mt-2 text-center">
+                  <button onClick={() => setShowMap(s => !s)} className="text-xs font-medium text-muted underline underline-offset-2">
+                    {showMap ? 'Hide map' : 'Show map'}
+                  </button>
+                  {showMap && (
+                    <iframe title="Map" src={maps.embed} loading="lazy"
+                      className="mt-2 h-48 w-full rounded-xl border border-line [filter:invert(0.9)_hue-rotate(180deg)]" />
+                  )}
+                </div>
               )}
-              {showPay && <div className="mt-3 text-left"><PayInstructions method={signup.payment_method} run={run} me={getMe()} /></div>}
+            </>
+          )}
+
+          {signup && (
+            <div className="mt-4 border-t border-line pt-4">
+              {signup.paid ? (
+                <>
+                  <p className="label">Who's running · {signup.roster.length}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {signup.roster.map((p, i) => (
+                      <span key={i} className="rounded-lg bg-raised px-2.5 py-1 text-sm">{p.first_name} {p.last_initial}.</span>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <p className="text-sm text-fg/75">
+                    Payment pending{signup.payment_method ? ` (${METHOD_LABELS[signup.payment_method]})` : ''}. The roster unlocks once it's confirmed.
+                  </p>
+                  {signup.payment_method && getMe() && (
+                    <button onClick={() => setShowPay(s => !s)} className="mt-2 text-sm font-semibold text-hoop">
+                      {showPay ? 'Hide' : 'How to pay →'}
+                    </button>
+                  )}
+                  {showPay && <div className="mt-3"><PayInstructions method={signup.payment_method} run={run} me={getMe()} /></div>}
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
 
-function Chip({ tone = 'sand', children }) {
+function Tag({ tone = 'base', children }) {
   const tones = {
-    sand: 'bg-sand text-stone-700 border-sand-line',
-    ember: 'bg-ember-soft text-ember-dark border-ember-line',
-    green: 'bg-green-50 text-green-800 border-green-200',
-    stone: 'bg-stone-100 text-stone-500 border-stone-200',
-    red: 'bg-red-50 text-red-700 border-red-200',
+    base: 'bg-raised text-fg/85',
+    green: 'bg-green-500/10 text-green-400',
+    muted: 'bg-raised text-muted',
+    red: 'bg-red-500/10 text-red-400',
   }
-  return <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${tones[tone]}`}>{children}</span>
-}
-
-function Dot() {
-  return <span className="h-1.5 w-1.5 rounded-full bg-current" />
+  return <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${tones[tone]}`}>{children}</span>
 }
