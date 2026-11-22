@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getMe } from '../lib/me'
 import { basePath } from '../lib/division'
 import { membershipLink, useSettings } from '../lib/pay'
@@ -10,6 +10,8 @@ export default function Unlimited({ division }) {
   const me = getMe(division)
   const link = settings ? membershipLink(settings, me?.player_id) : ''
   const youth = division === 'youth'
+  const [params] = useSearchParams()
+  const subscribed = params.has('subscribed')
 
   return (
     <div className="min-h-screen overflow-x-clip bg-court text-fg">
@@ -22,6 +24,13 @@ export default function Unlimited({ division }) {
         <h1 className="mt-3 font-display text-[64px] font-black uppercase leading-[0.85] tracking-tight sm:text-[88px]">
           Unlimited<br /><span className="text-hoop">Runs.</span>
         </h1>
+
+        {subscribed && (
+          <div className="mt-6 rounded-2xl border border-good/30 bg-good/10 p-4 text-good">
+            <p className="font-display text-2xl font-extrabold uppercase">You're Unlimited 🏀</p>
+            <p className="text-sm">Thanks for subscribing. Next time you join a run, just pick your name. Nothing to pay.</p>
+          </div>
+        )}
 
         <div className="card mt-8 overflow-hidden">
           <div className="border-b border-line p-6">
@@ -48,7 +57,7 @@ export default function Unlimited({ division }) {
               <button disabled className="btn-primary w-full py-4 text-lg">Sign-ups open soon</button>
             )}
             <p className="text-center text-xs text-muted">
-              Secure checkout by Stripe. Once you subscribe, your name gets marked Unlimited (usually same day).
+              Secure checkout by Stripe. Use the same phone number you signed up with and you're marked Unlimited right away.
             </p>
             {settings?.stripe_portal_url && (
               <a href={settings.stripe_portal_url} target="_blank" rel="noopener noreferrer"
