@@ -1,9 +1,13 @@
-// Light/dark for the runs site: follows the phone unless someone taps the toggle
+// Light/dark for the runs site: follows the phone every time the app opens. The toggle only
+// lasts for the current visit (sessionStorage), so it never gets stuck on the wrong mode.
 const KEY = 'runs-theme'
+
+// Older versions saved the choice forever — clear it so the phone's setting wins
+try { localStorage.removeItem(KEY) } catch { /* ignore */ }
 const media = window.matchMedia('(prefers-color-scheme: dark)')
 
 function saved() {
-  try { return localStorage.getItem(KEY) } catch { return null }
+  try { return sessionStorage.getItem(KEY) } catch { return null }
 }
 
 export function isDark() {
@@ -23,7 +27,7 @@ export function applyTheme() {
 }
 
 export function toggleTheme() {
-  try { localStorage.setItem(KEY, isDark() ? 'light' : 'dark') } catch { /* ignore */ }
+  try { sessionStorage.setItem(KEY, isDark() ? 'light' : 'dark') } catch { /* ignore */ }
   applyTheme()
 }
 

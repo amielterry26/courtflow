@@ -8,6 +8,8 @@ import { shortDate, timeRange } from '../lib/dates'
 import PayInstructions from './PayInstructions'
 import SmsConsent from './SmsConsent'
 
+const LEVEL_GROUPS = [['hs', 'High school'], ['ms', 'Middle school'], ['adult', 'Adults']]
+
 // Steps: who → (new → requested) | pay → done
 // Members skip picking a payment method.
 export default function JoinSheet({ run, onClose, onJoined }) {
@@ -17,14 +19,14 @@ export default function JoinSheet({ run, onClose, onJoined }) {
   const [names, setNames] = useState(null)
   const [pickedId, setPickedId] = useState(getPending(division)?.player_id ?? '')
   const [method, setMethod] = useState('')
-  const [form, setForm] = useState({ first: '', last: '', phone: '', sms: false })
+  const [form, setForm] = useState({ first: '', last: '', phone: '', sms: false, level: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [memberFallback, setMemberFallback] = useState(false)
   const settings = useSettings(division)
 
   useEffect(() => {
-    supabase.rpc('runs_player_names', { p_division: division }).then(({ data }) => {
+    supabase.rpc('runs_player_names', { p_division: division, p_run: run.id }).then(({ data }) => {
       const list = data ?? []
       setNames(list)
       const current = getMe(division)
@@ -68,7 +70,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
     setBusy(true)
     setError('')
     const { data, error } = await supabase.rpc('runs_request', {
-      p_first: form.first, p_last: form.last, p_phone: form.phone, p_run: run.id, p_sms_opt_in: form.sms,
+      p_first: form.first, p_last: form.last, p_phone: form.phone, p_run: run.id, p_sms_opt_in: form.sms, p_level: form.level || null,
     })
     if (error) { setBusy(false); return setError(error.message) }
     if (data.status === 'approved') {
@@ -127,10 +129,18 @@ export default function JoinSheet({ run, onClose, onJoined }) {
               <label className="label" htmlFor="who">Select your name</label>
               <select id="who" className="input" value={pickedId} onChange={e => setPickedId(e.target.value)}>
                 <option value="">{names ? 'Choose…' : 'Loading…'}</option>
-                {names?.map(n => <option key={n.id} value={n.id}>{n.first_name} {n.last_name}</option>)}
+                {names && groupNames(names).map(([label, list]) => (
+                  <optgroup key={label} label={label}>
+                    {list.map(n => (
+                      <option key={n.id} value={n.id} disabled={n.paid_for_run}>
+                        {n.first_name} {n.last_name}{n.paid_for_run ? ' · ✓ in' : ''}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </div>
-            <button disabled={!names?.some(n => n.id === pickedId)} onClick={pickName} className="btn-primary w-full py-3.5 text-base">Continue</button>
+            <button disabled={!names?.some(n => n.id === pickedId && !n.paid_for_run)} onClick={pickName} className="btn-primary w-full py-3.5 text-base">Continue</button>
             <div className="flex items-center gap-3 text-xs text-muted">
               <span className="h-px flex-1 bg-line" /> Not on the list? <span className="h-px flex-1 bg-line" />
             </div>
@@ -141,7 +151,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
         {step === 'new' && (
           <form onSubmit={submitRequest} className="space-y-3">
             <p className="text-sm text-fg/75">Runs are invite only. Send a request and you'll hear back once you're approved. Then come back and grab your spot.</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
               <div>
                 <label className="label" htmlFor="first">First name</label>
                 <input id="first" required autoComplete="given-name" className="input" value={form.first}
@@ -158,6 +168,16 @@ export default function JoinSheet({ run, onClose, onJoined }) {
               <input id="phone" required type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="(702) 555-1234"
                 value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
             </div>
+            {division === 'youth' && (
+              <div>
+                <label className="label" htmlFor="level">School</label>
+                <select id="level" required className="input" value={form.level} onChange={e => setForm(f => ({ ...f, level: e.target.value }))}>
+                  <option value="">Choose…</option>
+                  <option value="hs">High school</option>
+                  <option value="ms">Middle school</option>
+                </select>
+              </div>
+            )}
             <SmsConsent checked={form.sms} onChange={sms => setForm(f => ({ ...f, sms }))} />
             {error && <p className="text-sm text-bad">{error}</p>}
             <button disabled={busy} className="btn-primary w-full py-3.5 text-base">{busy ? 'Sending…' : 'Send request'}</button>
@@ -187,7 +207,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
                 <div>
                   <p className="font-display text-2xl font-extrabold uppercase leading-tight">Runs are ${price}.</p>
                   <p className="mb-3 text-sm text-muted">How are you paying?</p>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 [&>*]:min-w-0">
                     {(settings ? payMethods(settings) : []).map(m => (
                       <button key={m.id} onClick={() => setMethod(m.id)}
                         className={`flex items-center gap-2 rounded-xl border px-3 py-3.5 text-left text-sm font-semibold transition
@@ -210,9 +230,11 @@ export default function JoinSheet({ run, onClose, onJoined }) {
         {step === 'done' && (
           <div className="space-y-4">
             <div className="rounded-xl border border-hoop-line bg-hoop-soft px-4 py-3">
-              <p className="font-display text-2xl font-extrabold uppercase text-hoop">You're on the list 🏀</p>
+              <p className="font-display text-2xl font-extrabold uppercase text-hoop">
+                {method === 'member' ? "You're in 🏀" : 'Spot held. Now pay'}
+              </p>
               <p className="text-sm text-fg/80">
-                {method === 'member' ? 'Unlimited run booked. See you on the court.' : "Once your payment's confirmed you'll see who else is running."}
+                {method === 'member' ? 'Unlimited run booked. See you on the court.' : "You're not in until your payment's confirmed."}
               </p>
             </div>
             {method !== 'member' && <PayInstructions method={method} run={run} me={me} />}
@@ -232,4 +254,11 @@ export default function JoinSheet({ run, onClose, onJoined }) {
       </div>
     </div>
   )
+}
+
+// Dropdown sections: high school / middle school / adults (anyone without a level goes last)
+function groupNames(names) {
+  const groups = LEVEL_GROUPS.map(([level, label]) => [label, names.filter(n => n.level === level)])
+  const other = names.filter(n => !LEVEL_GROUPS.some(([level]) => level === n.level))
+  return [...groups, ['Players', other]].filter(([, list]) => list.length)
 }

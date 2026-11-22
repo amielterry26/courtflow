@@ -68,8 +68,8 @@ export default function Admin() {
     <div className="min-h-screen bg-court">
       <header className="sticky top-0 z-40 border-b border-line bg-court/90 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-1.5 font-display text-[17px] font-extrabold uppercase">
-            <span className="text-hoop">●</span> CourtFlow Hoops <span className="text-muted">· Runs admin</span>
+          <Link to="/" className="flex min-w-0 items-center gap-1.5 font-display text-[17px] font-extrabold uppercase">
+            <span className="text-hoop">●</span> <span className="truncate">Runs admin</span>
           </Link>
           <div className="flex items-center gap-3">
             <ThemeToggle />

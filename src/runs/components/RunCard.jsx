@@ -62,10 +62,14 @@ export default function RunCard({ run, onJoin, onShare, refreshKey }) {
           {open && (
             <>
               <div className="mt-4">
-                {signup ? (
-                  <div className="flex items-center justify-center gap-2 rounded-xl border border-hoop-line bg-hoop-soft py-3 font-semibold text-hoop">
+                {signup?.paid ? (
+                  <div className="flex items-center justify-center gap-2 rounded-xl border border-good/30 bg-good/10 py-3 font-semibold text-good">
                     ✓ You're in
                   </div>
+                ) : signup ? (
+                  <button onClick={() => setShowPay(true)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-hoop-line bg-hoop-soft py-3 font-semibold text-hoop">
+                    ⏳ Spot held · pay to lock it in
+                  </button>
                 ) : (
                   <button onClick={onJoin} disabled={full} className="btn-primary w-full py-3.5 text-base">
                     {full ? 'Run is full' : 'Join this run'}
@@ -73,9 +77,9 @@ export default function RunCard({ run, onJoin, onShare, refreshKey }) {
                 )}
               </div>
               <div className="mt-2 grid grid-cols-3 gap-2">
-                <a href={maps.apple} target="_blank" rel="noopener noreferrer" className="btn-ghost px-2 text-xs">Apple Maps</a>
-                <a href={maps.google} target="_blank" rel="noopener noreferrer" className="btn-ghost px-2 text-xs">Google Maps</a>
-                <button onClick={onShare} className="btn-ghost px-2 text-xs">↗ Share</button>
+                <a href={maps.apple} target="_blank" rel="noopener noreferrer" className="btn-ghost whitespace-nowrap px-1 text-[11px]">Apple Maps</a>
+                <a href={maps.google} target="_blank" rel="noopener noreferrer" className="btn-ghost whitespace-nowrap px-1 text-[11px]">Google Maps</a>
+                <button onClick={onShare} className="btn-ghost whitespace-nowrap px-1 text-[11px]">↗ Share</button>
               </div>
               {maps.embed && (
                 <div className="mt-2 text-center">
@@ -105,7 +109,7 @@ export default function RunCard({ run, onJoin, onShare, refreshKey }) {
               ) : (
                 <div>
                   <p className="text-sm text-fg/75">
-                    Payment pending{signup.payment_method ? ` (${METHOD_LABELS[signup.payment_method]})` : ''}. The roster unlocks once it's confirmed.
+                    Payment pending{signup.payment_method ? ` (${METHOD_LABELS[signup.payment_method]})` : ''}. You're in once Amiel confirms it, and then you'll see who's running.
                   </p>
                   {signup.payment_method && getMe(run.division) && (
                     <button onClick={() => setShowPay(s => !s)} className="mt-2 text-sm font-semibold text-hoop">

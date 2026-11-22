@@ -46,7 +46,8 @@ export function smsLink(phone, body) {
   return `sms:+1${digits(phone).slice(-10)}${isIOS() ? '&' : '?'}body=${encodeURIComponent(body)}`
 }
 
-// What to show after someone picks how they're paying
+// What to show after someone picks how they're paying: numbered steps, things to copy, and a button.
+// None of these apps let a website send money or confirm a payment, so Amiel ticks "paid" in admin.
 export function payInstructions(method, run, me, s) {
   const amount = Number(run.price)
   const note = payNote(run, me)
@@ -54,28 +55,36 @@ export function payInstructions(method, run, me, s) {
   switch (method) {
     case 'cash_app':
       return {
+        steps: [
+          { text: `Tap the button. It copies your note and opens Cash App to $${cashtag(s)}.` },
+          { text: `Make sure the amount is $${amount}. Type it in if it's blank.` },
+          { text: 'Tap "For", paste the note, and send.', copy: note },
+        ],
         href: `https://cash.app/$${cashtag(s)}/${amount}`,
         cta: `Open Cash App · $${amount}`,
-        steps: [`Sends $${amount} to $${cashtag(s)}`, 'Paste this in the "For" note:'],
-        copy: note,
+        copyOnTap: note,
       }
     case 'apple_cash':
       return {
-        href: smsLink(s.apple_cash_phone, `${note} — sending $${amount} Apple Cash`),
-        cta: `Open Messages · $${amount}`,
-        steps: [`Opens a text to ${name}`, `Tap the Apple Cash button and send $${amount}`],
+        steps: [
+          { text: `Tap the button. It opens a text to ${name}.` },
+          { text: `In that text, tap the ⊕ (or the Apple Cash icon), enter $${amount}, and tap Send.` },
+        ],
+        href: smsLink(s.apple_cash_phone, `Sending $${amount} Apple Cash for the ${note}`),
+        cta: `Text ${name} · $${amount} Apple Cash`,
       }
     case 'zelle':
       return {
-        steps: [`Open your bank app → Zelle → send $${amount} to ${name}:`],
-        copyValue: s.zelle,
-        extra: 'Memo:',
-        copy: note,
+        steps: [
+          { text: `Copy ${name}'s Zelle:`, copy: s.zelle },
+          { text: `Open your bank app → Zelle → paste it and send $${amount}.` },
+          { text: 'Paste this in the memo:', copy: note },
+        ],
       }
     case 'member':
-      return { steps: ['Covered by your Unlimited membership. See you on the court.'] }
+      return { steps: [{ text: "You're on Unlimited. Nothing to pay." }] }
     default:
-      return { steps: [`Bring $${amount} cash to the run.`] }
+      return { steps: [{ text: `Bring $${amount} cash to the run and hand it to ${name}.` }] }
   }
 }
 

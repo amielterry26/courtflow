@@ -37,3 +37,15 @@
   }
   .label { @apply mb-1.5 block text-[11px] font-bold uppercase tracking-[0.14em] text-muted; }
 }
+
+/* iPhone date/time/select inputs have a built-in minimum width that pushes them off the
+   side of narrow columns — let them shrink and keep the value left-aligned */
+.input { min-width: 0; max-width: 100%; }
+input.input[type='date'], input.input[type='time'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-height: 2.75rem;
+}
+input.input::-webkit-date-and-time-value { text-align: left; }
+

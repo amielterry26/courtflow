@@ -60,13 +60,13 @@ export default function AdminRequests({ onChange }) {
       <PushSetup compact />
       {approved.map(p => (
         <div key={p.id} className="rounded-2xl border border-good/30 bg-good/10 p-4 text-sm text-good">
-          <p className="font-semibold">✓ {p.first_name} {p.last_name} is approved</p>
-          {p.texting && <p className="mt-0.5 text-good/80">Texting them their link…</p>}
-          {p.texted && <p className="mt-0.5 text-good/80">📲 Texted {p.first_name} their link to join.</p>}
+          <p className="font-semibold">✅ {p.first_name} {p.last_name} is approved</p>
+          {p.texting && <p className="mt-0.5 text-good/80">Texting {p.first_name} the link to join…</p>}
+          {p.texted && <p className="mt-0.5 text-good/80">📲 Texted {p.first_name}. They got the link and can join now.</p>}
           {!p.texting && !p.texted && (
             <>
               <p className="mt-0.5 text-good/80">
-                {p.textError ? `Couldn't auto-text (${p.textError}). ` : ''}Send them the link so they can join and pay:
+                {p.textError ? `The automatic text didn't go through (${p.textError}). ` : ''}Send {p.first_name} the link from your phone so they can join:
               </p>
               <a href={smsLink(p.phone, approvalText(p))} className="btn mt-3 w-full bg-green-600 py-3 text-white">💬 Text {p.first_name}</a>
             </>

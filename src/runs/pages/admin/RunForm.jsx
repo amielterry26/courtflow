@@ -20,6 +20,7 @@ export default function RunForm({ run, onDone }) {
   const division = useAdminDivision()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [newGym, setNewGym] = useState({ name: '', address: '' })
 
   useEffect(() => {
     supabase.from('gyms').select('id, name').order('name').then(({ data }) => setGyms(data ?? []))
@@ -33,11 +34,19 @@ export default function RunForm({ run, onDone }) {
   async function handleSubmit(e) {
     e.preventDefault()
     setSaving(true)
+    setError('')
+    // "+ New location" picked: create it first
+    let gymId = form.gym_id
+    if (gymId === 'new') {
+      const { data, error } = await supabase.from('gyms').insert({ name: newGym.name, address: newGym.address || null }).select('id').single()
+      if (error) { setSaving(false); return setError(error.message) }
+      gymId = data.id
+    }
     const payload = {
       run_date: form.run_date,
       start_time: form.start_time,
       end_time: form.end_time || null,
-      gym_id: form.gym_id || null,
+      gym_id: gymId || null,
       price: Number(form.price) || 0,
       capacity: form.capacity ? Number(form.capacity) : null,
       notes: form.notes || null,
@@ -66,7 +75,7 @@ export default function RunForm({ run, onDone }) {
         <input id="date" type="date" required className="input" value={form.run_date} onChange={set('run_date')} />
       </div>
       {!run && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
           <div>
             <label className="label" htmlFor="repeat">Repeat</label>
             <select id="repeat" className="input" value={form.repeat} onChange={set('repeat')}>
@@ -83,7 +92,7 @@ export default function RunForm({ run, onDone }) {
           )}
         </div>
       )}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
         <div>
           <label className="label" htmlFor="start">Start</label>
           <input id="start" type="time" required className="input" value={form.start_time} onChange={set('start_time')} />
@@ -98,9 +107,18 @@ export default function RunForm({ run, onDone }) {
         <select id="gym" className="input" value={form.gym_id} onChange={set('gym_id')}>
           <option value="">Select a location</option>
           {gyms.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+          <option value="new">+ New location…</option>
         </select>
+        {form.gym_id === 'new' && (
+          <div className="mt-2 space-y-2 rounded-xl border border-line bg-raised p-3">
+            <input required className="input" placeholder="Location name (e.g. Atlas Hoops)" value={newGym.name}
+              onChange={e => setNewGym(g => ({ ...g, name: e.target.value }))} />
+            <input className="input" placeholder="Full address (for directions)" value={newGym.address}
+              onChange={e => setNewGym(g => ({ ...g, address: e.target.value }))} />
+          </div>
+        )}
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
         <div>
           <label className="label" htmlFor="price">Price ($)</label>
           <input id="price" type="number" inputMode="decimal" min="0" step="1" required className="input" value={form.price} onChange={set('price')} />

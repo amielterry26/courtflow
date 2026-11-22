@@ -66,7 +66,8 @@ Deno.serve(async (req) => {
     const body = run
       ? `You're approved for CourtFlow Hoops runs, ${p.first_name} 🏀 Tap to lock in your spot for ${shortDate(run.run_date)}: ${runLink(run, true)}\nReply STOP to opt out.`
       : `You're approved for CourtFlow Hoops runs, ${p.first_name} 🏀 Pick a date and grab your spot: ${divisionUrl(p.division)}\nReply STOP to opt out.`
-    const r = await sendSms(p.phone, body)
+    if (!p.phone) return json({ sent: 0, error: 'no phone number on file' })
+    const r = await sendSms(p.phone, body, true)
     return json({ sent: r.ok ? 1 : 0, error: r.error })
   }
 

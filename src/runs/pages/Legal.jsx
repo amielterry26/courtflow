@@ -100,7 +100,7 @@ export function SmsOptIn() {
       <p>{BRAND} sends text messages from {TEXT_NUMBER} only to players who opt in. Players opt in on this website when they request to join a run or sign up through an invite link: after entering their name and phone number, they can check the box below. It is unchecked by default and not required to play.</p>
       <div className="card p-4">
         <p className="label">What players see on the sign-up form</p>
-        <div className="mt-2 grid grid-cols-2 gap-3">
+        <div className="mt-2 grid grid-cols-2 gap-3 [&>*]:min-w-0">
           <input className="input" placeholder="First name" disabled />
           <input className="input" placeholder="Last name" disabled />
         </div>

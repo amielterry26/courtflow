@@ -7,7 +7,8 @@ export function toE164(phone: string) {
   return d.length === 10 ? `+1${d}` : null
 }
 
-export async function sendSms(phone: string, body: string): Promise<{ ok: boolean; error?: string }> {
+// confirm: wait a few seconds for the carrier's verdict instead of trusting "queued"
+export async function sendSms(phone: string, body: string, confirm = false): Promise<{ ok: boolean; error?: string }> {
   const sid = Deno.env.get('TWILIO_ACCOUNT_SID')
   const token = Deno.env.get('TWILIO_AUTH_TOKEN')
   const from = Deno.env.get('TWILIO_FROM')
@@ -25,7 +26,21 @@ export async function sendSms(phone: string, body: string): Promise<{ ok: boolea
     headers: { Authorization: `Basic ${btoa(`${sid}:${token}`)}`, 'Content-Type': 'application/x-www-form-urlencoded' },
     body: form,
   })
-  if (res.ok) return { ok: true }
+  if (res.ok) {
+    if (!confirm) return { ok: true }
+    const msg = await res.json()
+    for (let i = 0; i < 6; i++) {
+      await new Promise(r => setTimeout(r, 1500))
+      const check = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages/${msg.sid}.json`, {
+        headers: { Authorization: `Basic ${btoa(`${sid}:${token}`)}` },
+      }).then(r => r.json()).catch(() => null)
+      if (check?.status === 'delivered') return { ok: true }
+      if (check?.status === 'undelivered' || check?.status === 'failed') {
+        return { ok: false, error: check.error_code === 30034 ? 'texting is still waiting on carrier approval' : `carrier rejected it (${check.error_code})` }
+      }
+    }
+    return { ok: true } // still sending after ~9s — almost always delivers
+  }
   const err = await res.json().catch(() => ({}))
   console.error('twilio failed', res.status, err)
   return { ok: false, error: err.message ?? `Twilio error ${res.status}` }

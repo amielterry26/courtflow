@@ -47,7 +47,7 @@ export default function Invite() {
           <div className="card p-6 text-center text-sm text-fg/75">This invite link isn't valid anymore. Ask for a new one.</div>
         ) : (
           <form onSubmit={submit} className="card space-y-3 p-5">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
               <div>
                 <label className="label" htmlFor="first">First name</label>
                 <input id="first" required autoComplete="given-name" className="input" value={form.first}
