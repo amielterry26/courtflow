@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getMe } from '../lib/me'
 import { fromKey, monthGrid, toKey, todayKey, relativeDay, shortDate, weekday } from '../lib/dates'
-import { membershipLink, STRIPE_MEMBERSHIP_URL, STRIPE_PORTAL_URL } from '../lib/pay'
+import { membershipLink, useSettings } from '../lib/pay'
 import Calendar from '../components/Calendar'
 import RunCard from '../components/RunCard'
 import JoinSheet from '../components/JoinSheet'
@@ -19,6 +19,7 @@ export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [welcome, setWelcome] = useState(location.state?.welcome ?? null)
   const panelRef = useRef(null)
+  const settings = useSettings()
 
   // Runs for the visible 6-week grid
   useEffect(() => {
@@ -158,19 +159,19 @@ export default function Home() {
         </section>
 
         {/* Membership */}
-        {STRIPE_MEMBERSHIP_URL && (
+        {settings?.stripe_membership_url && (
           <section className="mx-auto mt-8 max-w-5xl overflow-hidden rounded-3xl bg-ink p-6 text-white sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-8">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-ember-line">Membership</p>
-              <p className="mt-1 font-serif text-3xl font-semibold">$25<span className="text-lg text-stone-400">/month</span></p>
-              <p className="mt-1 text-sm text-stone-300">2 runs a month. No signing in, no hassle. Cancel anytime.</p>
+              <p className="mt-1 font-serif text-3xl font-semibold">${Number(settings.member_price)}<span className="text-lg text-stone-400">/month</span></p>
+              <p className="mt-1 text-sm text-stone-300">{settings.member_runs_per_month} runs a month. No signing in, no hassle. Cancel anytime.</p>
             </div>
             <div className="mt-5 flex flex-col items-start gap-2 sm:mt-0 sm:items-end">
-              <a href={membershipLink(me?.player_id)} target="_blank" rel="noopener noreferrer" className="btn-primary px-6 py-3 text-base">
+              <a href={membershipLink(settings, me?.player_id)} target="_blank" rel="noopener noreferrer" className="btn-primary px-6 py-3 text-base">
                 Become a member
               </a>
-              {STRIPE_PORTAL_URL && (
-                <a href={STRIPE_PORTAL_URL} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 underline underline-offset-2">
+              {settings.stripe_portal_url && (
+                <a href={settings.stripe_portal_url} target="_blank" rel="noopener noreferrer" className="text-xs text-stone-400 underline underline-offset-2">
                   Manage or cancel
                 </a>
               )}

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { loadSettings } from '../../lib/pay'
+import { fromKey, toKey } from '../../lib/dates'
 
-const BLANK = { run_date: '', start_time: '09:00', end_time: '11:00', gym_id: '', price: '12', capacity: '', notes: '' }
+const BLANK = { run_date: '', start_time: '09:00', end_time: '11:00', gym_id: '', price: '12', capacity: '', notes: '', repeat: '0', count: '6' }
 
 export default function RunForm({ run, onDone }) {
   const [form, setForm] = useState(run ? {
@@ -19,7 +21,8 @@ export default function RunForm({ run, onDone }) {
 
   useEffect(() => {
     supabase.from('gyms').select('id, name').order('name').then(({ data }) => setGyms(data ?? []))
-  }, [])
+    if (!run) loadSettings().then(s => s.default_price && setForm(f => ({ ...f, price: String(Number(s.default_price)) })))
+  }, [run])
 
   function set(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }))
@@ -37,9 +40,16 @@ export default function RunForm({ run, onDone }) {
       capacity: form.capacity ? Number(form.capacity) : null,
       notes: form.notes || null,
     }
+    // New runs can repeat weekly / every other week
+    const every = Number(form.repeat)
+    const rows = run || !every ? [payload] : Array.from({ length: Math.max(Number(form.count) || 1, 1) }, (_, i) => {
+      const d = fromKey(form.run_date)
+      d.setDate(d.getDate() + i * every)
+      return { ...payload, run_date: toKey(d) }
+    })
     const { error } = run
       ? await supabase.from('runs').update(payload).eq('id', run.id)
-      : await supabase.from('runs').insert(payload)
+      : await supabase.from('runs').insert(rows)
     setSaving(false)
     if (error) return setError(error.message)
     onDone()
@@ -52,6 +62,24 @@ export default function RunForm({ run, onDone }) {
         <label className="label" htmlFor="date">Date</label>
         <input id="date" type="date" required className="input" value={form.run_date} onChange={set('run_date')} />
       </div>
+      {!run && (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="label" htmlFor="repeat">Repeat</label>
+            <select id="repeat" className="input" value={form.repeat} onChange={set('repeat')}>
+              <option value="0">Just once</option>
+              <option value="7">Every week</option>
+              <option value="14">Every other week</option>
+            </select>
+          </div>
+          {form.repeat !== '0' && (
+            <div>
+              <label className="label" htmlFor="count">How many runs</label>
+              <input id="count" type="number" inputMode="numeric" min="1" max="52" className="input" value={form.count} onChange={set('count')} />
+            </div>
+          )}
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="label" htmlFor="start">Start</label>
@@ -85,7 +113,7 @@ export default function RunForm({ run, onDone }) {
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="flex gap-2 pt-1">
-        <button disabled={saving} className="btn-primary flex-1 py-3">{saving ? 'Saving…' : run ? 'Save changes' : 'Add run'}</button>
+        <button disabled={saving} className="btn-primary flex-1 py-3">{saving ? 'Saving…' : run ? 'Save changes' : form.repeat !== '0' ? `Add ${form.count} runs` : 'Add run'}</button>
         <button type="button" onClick={onDone} className="btn-ghost px-5">Cancel</button>
       </div>
     </form>

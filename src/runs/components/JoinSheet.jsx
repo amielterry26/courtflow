@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { getMe, setMe, setToken, forgetMe } from '../lib/me'
-import { METHODS } from '../lib/pay'
+import { payMethods, useSettings } from '../lib/pay'
 import { shortDate, timeRange } from '../lib/dates'
 import PayInstructions from './PayInstructions'
 
@@ -15,6 +15,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
   const [form, setForm] = useState({ first: '', last: '', phone: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const settings = useSettings()
 
   useEffect(() => {
     supabase.rpc('runs_player_names').then(({ data }) => {
@@ -75,7 +76,8 @@ export default function JoinSheet({ run, onClose, onJoined }) {
     onJoined()
   }
 
-  const methods = me?.is_member ? [{ id: 'member', label: 'Membership', icon: '⭐' }, ...METHODS] : METHODS
+  const base = settings ? payMethods(settings) : []
+  const methods = me?.is_member ? [{ id: 'member', label: 'Membership', icon: '⭐' }, ...base] : base
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true">

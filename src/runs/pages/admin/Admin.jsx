@@ -6,12 +6,14 @@ import AdminRun from './AdminRun'
 import AdminRequests from './AdminRequests'
 import AdminPlayers from './AdminPlayers'
 import AdminLocations from './AdminLocations'
+import AdminSettings from './AdminSettings'
 
 const tabs = [
   { to: '/admin', label: 'Runs', end: true },
   { to: '/admin/requests', label: 'Requests' },
   { to: '/admin/players', label: 'Players' },
   { to: '/admin/locations', label: 'Locations' },
+  { to: '/admin/settings', label: 'Settings' },
 ]
 
 export default function Admin() {
@@ -63,6 +65,7 @@ export default function Admin() {
           <Route path="requests" element={<AdminRequests onChange={setPending} />} />
           <Route path="players" element={<AdminPlayers />} />
           <Route path="locations" element={<AdminLocations />} />
+          <Route path="settings" element={<AdminSettings />} />
         </Routes>
       </main>
     </div>

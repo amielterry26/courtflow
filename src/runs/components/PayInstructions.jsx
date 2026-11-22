@@ -1,12 +1,14 @@
-import { payInstructions } from '../lib/pay'
+import { payInstructions, useSettings } from '../lib/pay'
 import CopyButton from './CopyButton'
 
 export default function PayInstructions({ method, run, me }) {
-  const p = payInstructions(method, run, me)
+  const settings = useSettings()
+  if (!settings) return null
+  const p = payInstructions(method, run, me, settings)
   return (
     <div className="space-y-2.5">
       {p.steps.map(s => <p key={s} className="text-sm text-stone-600">{s}</p>)}
-      {p.copyValue && <CopyButton value={p.copyValue} label={p.copyLabel} />}
+      {p.copyValue && <CopyButton value={p.copyValue} />}
       {p.extra && <p className="text-sm text-stone-600">{p.extra}</p>}
       {p.copy && <CopyButton value={p.copy} />}
       {p.cta && (

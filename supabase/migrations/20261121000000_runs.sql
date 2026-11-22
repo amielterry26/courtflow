@@ -1,5 +1,5 @@
 -- ─── runs.courtflow.app — open gym pickup runs ──────────────────────────────
--- Locations reuse the existing gyms table.
+-- Served from the main app when the host starts with runs. Locations reuse the gyms table.
 
 create table run_players (
   id          uuid primary key default gen_random_uuid(),
@@ -36,6 +36,21 @@ create table run_signups (
   unique (run_id, player_id)
 );
 
+-- One row of settings, edited from the runs admin (payment handles, Stripe, pricing)
+create table run_settings (
+  id                     int primary key default 1 check (id = 1),
+  pay_name               text not null default 'Amiel',
+  cashapp_tag            text,
+  zelle                  text,
+  apple_cash_phone       text,
+  stripe_membership_url  text,
+  stripe_portal_url      text,
+  default_price          numeric(6,2) not null default 12,
+  member_price           numeric(6,2) not null default 25,
+  member_runs_per_month  int not null default 2
+);
+insert into run_settings (id) values (1);
+
 create table run_invites (
   token       uuid primary key default gen_random_uuid(),
   label       text,
@@ -47,11 +62,15 @@ alter table run_players enable row level security;
 alter table runs        enable row level security;
 alter table run_signups enable row level security;
 alter table run_invites enable row level security;
+alter table run_settings enable row level security;
 
 create policy "Trainers manage run_players" on run_players for all to authenticated using (true) with check (true);
 create policy "Trainers manage runs"        on runs        for all to authenticated using (true) with check (true);
 create policy "Trainers manage run_signups" on run_signups for all to authenticated using (true) with check (true);
 create policy "Trainers manage run_invites" on run_invites for all to authenticated using (true) with check (true);
+create policy "Trainers manage run_settings" on run_settings for all to authenticated using (true) with check (true);
+-- Payment handles and prices are shown on the public page anyway
+create policy "Anyone can read run_settings" on run_settings for select to anon using (true);
 
 -- ─── Public functions (security definer so anon never reads phone numbers) ──
 
@@ -105,8 +124,9 @@ begin
     if not v_player.is_member then raise exception 'Your membership isn''t active yet'; end if;
     if (select count(*) from run_signups s join runs r on r.id = s.run_id
         where s.player_id = p_player and s.payment_method = 'member' and s.run_id <> p_run
-          and date_trunc('month', r.run_date) = date_trunc('month', v_run.run_date)) >= 2 then
-      raise exception 'You''ve used both member runs this month';
+          and date_trunc('month', r.run_date) = date_trunc('month', v_run.run_date))
+        >= (select member_runs_per_month from run_settings where id = 1) then
+      raise exception 'You''ve used all your member runs this month';
     end if;
   end if;
 
