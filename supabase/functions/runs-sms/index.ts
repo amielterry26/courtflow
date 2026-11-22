@@ -21,7 +21,7 @@ async function isTrainer(req: Request) {
 }
 
 const RUN_FIELDS = 'id, run_date, start_time, end_time, cancelled, division, gyms(name, address)'
-const SIGNUP_FIELDS = `id, paid, payment_method, reminded_at, run_players!inner(first_name, phone, status), runs!inner(${RUN_FIELDS})`
+const SIGNUP_FIELDS = `id, paid, payment_method, reminded_at, run_players!inner(first_name, phone, status, sms_opt_in), runs!inner(${RUN_FIELDS})`
 
 function reminderText(s: any) {
   const run = s.runs
@@ -41,7 +41,7 @@ async function remind(signups: any[]) {
   let sent = 0
   const failed: string[] = []
   for (const s of signups) {
-    if (s.runs.cancelled || s.run_players.status !== 'approved') continue
+    if (s.runs.cancelled || s.run_players.status !== 'approved' || !s.run_players.sms_opt_in) continue
     const r = await sendSms(s.run_players.phone, reminderText(s))
     if (r.ok) {
       sent++
@@ -58,8 +58,9 @@ Deno.serve(async (req) => {
   if (action === 'approved') {
     if (!(await isTrainer(req))) return json({ error: 'Not signed in' }, 401)
     const { data: p } = await db.from('run_players')
-      .select('first_name, phone, status, division, run_signups(runs(id, run_date, division))').eq('id', player_id).single()
+      .select('first_name, phone, status, division, sms_opt_in, run_signups(runs(id, run_date, division))').eq('id', player_id).single()
     if (!p || p.status !== 'approved') return json({ error: 'Player not approved' }, 400)
+    if (!p.sms_opt_in) return json({ sent: 0, error: "they didn't opt in to texts" })
     const run = (p.run_signups ?? []).map((s: any) => s.runs).filter((r: any) => r.run_date >= pacificToday())
       .sort((a: any, b: any) => a.run_date.localeCompare(b.run_date))[0]
     const body = run

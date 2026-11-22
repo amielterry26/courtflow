@@ -6,6 +6,7 @@ import { notifyRequest } from '../lib/notify'
 import { pushRequest } from '../lib/push'
 import { shortDate, timeRange } from '../lib/dates'
 import PayInstructions from './PayInstructions'
+import SmsConsent from './SmsConsent'
 
 // Steps: who → (new → requested) | pay → done
 // Members skip picking a payment method.
@@ -16,7 +17,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
   const [names, setNames] = useState(null)
   const [pickedId, setPickedId] = useState(getPending(division)?.player_id ?? '')
   const [method, setMethod] = useState('')
-  const [form, setForm] = useState({ first: '', last: '', phone: '' })
+  const [form, setForm] = useState({ first: '', last: '', phone: '', sms: false })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [memberFallback, setMemberFallback] = useState(false)
@@ -67,7 +68,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
     setBusy(true)
     setError('')
     const { data, error } = await supabase.rpc('runs_request', {
-      p_first: form.first, p_last: form.last, p_phone: form.phone, p_run: run.id,
+      p_first: form.first, p_last: form.last, p_phone: form.phone, p_run: run.id, p_sms_opt_in: form.sms,
     })
     if (error) { setBusy(false); return setError(error.message) }
     if (data.status === 'approved') {
@@ -139,7 +140,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
 
         {step === 'new' && (
           <form onSubmit={submitRequest} className="space-y-3">
-            <p className="text-sm text-fg/75">Runs are invite only. Send a request and you'll get a text once you're approved. Then come back and grab your spot.</p>
+            <p className="text-sm text-fg/75">Runs are invite only. Send a request and you'll hear back once you're approved. Then come back and grab your spot.</p>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="label" htmlFor="first">First name</label>
@@ -157,6 +158,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
               <input id="phone" required type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="(702) 555-1234"
                 value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
             </div>
+            <SmsConsent checked={form.sms} onChange={sms => setForm(f => ({ ...f, sms }))} />
             {error && <p className="text-sm text-bad">{error}</p>}
             <button disabled={busy} className="btn-primary w-full py-3.5 text-base">{busy ? 'Sending…' : 'Send request'}</button>
             <button type="button" onClick={() => setStep('who')} className="w-full py-2 text-sm text-muted">← Back</button>

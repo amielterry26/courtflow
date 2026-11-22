@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { fromKey, monthGrid, toKey, todayKey, relativeDay, shortDate, timeRange, weekday } from '../lib/dates'
 import Calendar from '../components/Calendar'
@@ -164,6 +164,9 @@ export default function Home({ division }) {
 
         <footer className="mt-12 text-center font-display text-sm font-bold uppercase tracking-[0.2em] text-muted/60">
           CourtFlow Hoops · Runs · Invite only
+          <span className="mt-2 block font-body text-xs font-medium normal-case tracking-normal">
+            <Link to="/terms" className="underline">Terms</Link> · <Link to="/privacy" className="underline">Privacy</Link> · <Link to="/sms" className="underline">Text messages</Link>
+          </span>
         </footer>
       </main>
 

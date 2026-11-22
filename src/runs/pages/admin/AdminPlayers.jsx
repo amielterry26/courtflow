@@ -5,7 +5,7 @@ import CopyButton from '../../components/CopyButton'
 import { useAdminDivision } from '../../lib/adminDivision'
 import { DIVISION_LABELS } from '../../lib/division'
 
-const BLANK = { first_name: '', last_name: '', phone: '' }
+const BLANK = { first_name: '', last_name: '', phone: '', sms_opt_in: true }
 
 export default function AdminPlayers() {
   const [players, setPlayers] = useState([])
@@ -121,6 +121,10 @@ export default function AdminPlayers() {
             </div>
             <input required type="tel" inputMode="tel" className="input" placeholder="Phone" value={form.phone}
               onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+            <label className="flex items-center gap-2 text-sm text-fg/80">
+              <input type="checkbox" checked={form.sms_opt_in} onChange={e => setForm(f => ({ ...f, sms_opt_in: e.target.checked }))} className="accent-[rgb(var(--hoop))]" />
+              They said OK to run texts (reminders)
+            </label>
             {error && <p className="text-sm text-bad">{error}</p>}
             <div className="flex gap-2">
               <button className="btn-primary flex-1">Add player</button>

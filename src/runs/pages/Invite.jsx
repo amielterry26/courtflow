@@ -3,12 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { setMe } from '../lib/me'
 import { basePath } from '../lib/division'
+import SmsConsent from '../components/SmsConsent'
 
 export default function Invite() {
   const { token } = useParams()
   const navigate = useNavigate()
   const [valid, setValid] = useState(undefined)
-  const [form, setForm] = useState({ first: '', last: '', phone: '' })
+  const [form, setForm] = useState({ first: '', last: '', phone: '', sms: false })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -21,7 +22,7 @@ export default function Invite() {
     setBusy(true)
     setError('')
     const { data, error } = await supabase.rpc('runs_request', {
-      p_first: form.first, p_last: form.last, p_phone: form.phone, p_invite: token,
+      p_first: form.first, p_last: form.last, p_phone: form.phone, p_invite: token, p_sms_opt_in: form.sms,
     })
     setBusy(false)
     if (error) return setError(error.message)
@@ -63,6 +64,7 @@ export default function Invite() {
               <input id="phone" required type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="(702) 555-1234"
                 value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
             </div>
+            <SmsConsent checked={form.sms} onChange={sms => setForm(f => ({ ...f, sms }))} />
             {error && <p className="text-sm text-bad">{error}</p>}
             <button disabled={busy || !valid} className="btn-primary w-full py-3 text-base">
               {busy ? 'Joining…' : "I'm in"}
