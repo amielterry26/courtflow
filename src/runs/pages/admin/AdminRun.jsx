@@ -14,6 +14,7 @@ export default function AdminRun() {
   const [unpaidOnly, setUnpaidOnly] = useState(false)
   const [addId, setAddId] = useState('')
   const [reminding, setReminding] = useState('')
+  const [notice, setNotice] = useState('')
 
   useEffect(() => { load() }, [id])
 
@@ -28,8 +29,15 @@ export default function AdminRun() {
   }
 
   async function togglePaid(signup) {
-    setRun(r => ({ ...r, run_signups: r.run_signups.map(s => s.id === signup.id ? { ...s, paid: !s.paid } : s) }))
-    await supabase.from('run_signups').update({ paid: !signup.paid }).eq('id', signup.id)
+    const paid = !signup.paid
+    setRun(r => ({ ...r, run_signups: r.run_signups.map(s => s.id === signup.id ? { ...s, paid } : s) }))
+    await supabase.from('run_signups').update({ paid }).eq('id', signup.id)
+    if (!paid) return setNotice('')
+    // Payment confirmed → text the player they're in
+    const name = signup.run_players.first_name
+    setNotice(`✓ ${name} marked paid. Texting them…`)
+    const { data } = await supabase.functions.invoke('runs-sms', { body: { action: 'paid', signup_id: signup.id } })
+    setNotice(data?.sent ? `✓ ${name} marked paid. 📲 Texted them they're in.` : `✓ ${name} marked paid. (No text: ${data?.error ?? 'texting unavailable'})`)
   }
 
   async function setMethod(signup, method) {
@@ -111,6 +119,7 @@ export default function AdminRun() {
         </label>
       </div>
 
+      {notice && <p className="mb-2 rounded-xl bg-good/10 px-3 py-2 text-sm text-good">{notice}</p>}
       <div className="card divide-y divide-line">
         {shown.length === 0 && <p className="p-6 text-center text-sm text-muted">{unpaidOnly ? 'Everyone has paid 🎉' : 'Nobody yet.'}</p>}
         {shown.map(s => {

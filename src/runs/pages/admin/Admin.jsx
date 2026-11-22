@@ -8,6 +8,7 @@ import AdminPlayers from './AdminPlayers'
 import AdminLocations from './AdminLocations'
 import AdminSettings from './AdminSettings'
 import { setBadge } from '../../lib/push'
+import { todayKey } from '../../lib/dates'
 import ThemeToggle from '../../components/ThemeToggle'
 import { AdminDivision } from '../../lib/adminDivision'
 import { DIVISIONS, DIVISION_LABELS } from '../../lib/division'
@@ -23,6 +24,7 @@ const tabs = [
 export default function Admin() {
   const [user, setUser] = useState(undefined)
   const [pending, setPending] = useState(0)
+  const [unpaid, setUnpaid] = useState(0)
   const [division, setDivision] = useState(() => {
     try { return localStorage.getItem('runs-admin-division') || 'adult' } catch { return 'adult' }
   })
@@ -50,8 +52,16 @@ export default function Admin() {
   // Pending request count: tab badge + home screen icon badge, refreshed when the app comes back up
   useEffect(() => {
     if (!user) return
-    const refresh = () => supabase.from('run_players').select('id', { count: 'exact', head: true }).eq('status', 'pending')
-      .then(({ count }) => setPending(count ?? 0))
+    const refresh = async () => {
+      const today = todayKey()
+      const [{ count: requests }, { count: payments }] = await Promise.all([
+        supabase.from('run_players').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('run_signups').select('id, runs!inner(run_date)', { count: 'exact', head: true })
+          .eq('paid', false).not('payment_method', 'is', null).gte('runs.run_date', today),
+      ])
+      setPending(requests ?? 0)
+      setUnpaid(payments ?? 0)
+    }
     refresh()
     const onVisible = () => document.visibilityState === 'visible' && refresh()
     document.addEventListener('visibilitychange', onVisible)
@@ -59,7 +69,7 @@ export default function Admin() {
     return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(timer) }
   }, [user])
 
-  useEffect(() => { if (user) setBadge(pending) }, [pending, user])
+  useEffect(() => { if (user) setBadge(pending + unpaid) }, [pending, unpaid, user])
 
   if (user === undefined) return <div className="min-h-screen bg-court" />
   if (!user) return <Login />
@@ -93,6 +103,9 @@ export default function Admin() {
               className={({ isActive }) => `whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition
                 ${isActive ? 'bg-hoop text-white' : 'text-fg/75 hover:bg-raised'}`}>
               {t.label}
+              {t.label === 'Runs' && unpaid > 0 && (
+                <span className="ml-1.5 rounded-full bg-white px-1.5 text-xs text-hoop ring-1 ring-hoop/30">{unpaid} 💵</span>
+              )}
               {t.label === 'Requests' && pending > 0 && (
                 <span className="ml-1.5 rounded-full bg-surface px-1.5 text-xs text-hoop">{pending}</span>
               )}

@@ -6,11 +6,6 @@ export default function PayInstructions({ method, run, me }) {
   if (!settings) return null
   const p = payInstructions(method, run, me, settings)
 
-  function open() {
-    // Copy the note on the same tap that opens the app, so it's ready to paste
-    if (p.copyOnTap) navigator.clipboard?.writeText(p.copyOnTap).catch(() => {})
-  }
-
   return (
     <div className="space-y-3">
       <ol className="space-y-3">
@@ -27,12 +22,12 @@ export default function PayInstructions({ method, run, me }) {
         ))}
       </ol>
       {p.cta && (
-        <a href={p.href} onClick={open} target="_blank" rel="noopener noreferrer" className="btn-primary w-full py-3 text-base">
+        <a href={p.href} target="_blank" rel="noopener noreferrer" className="btn-primary w-full py-3 text-base">
           {p.cta}
         </a>
       )}
       {method !== 'member' && (
-        <p className="text-center text-xs text-muted">Once Amiel sees your payment, you'll show as In.</p>
+        <p className="text-center text-xs text-muted">Amiel gets a heads-up and confirms your payment. You'll get a text when you're in.</p>
       )}
     </div>
   )

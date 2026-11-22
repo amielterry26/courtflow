@@ -102,6 +102,8 @@ export default function JoinSheet({ run, onClose, onJoined }) {
     }
     setMethod(m)
     setToken(run.id, data)
+    // Heads-up to Amiel that a payment is coming
+    if (m !== 'member') supabase.functions.invoke('runs-notify', { body: { signup_token: data } }).catch(() => {})
     setStep('done')
     onJoined()
   }

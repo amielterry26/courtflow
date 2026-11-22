@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { loadSettings } from '../../lib/pay'
 import { fromKey, toKey } from '../../lib/dates'
 import { useAdminDivision } from '../../lib/adminDivision'
+import PlaceSearch from '../../components/PlaceSearch'
 
 const BLANK = { run_date: '', start_time: '09:00', end_time: '11:00', gym_id: '', price: '12', capacity: '', notes: '', repeat: '0', count: '6' }
 
@@ -110,11 +111,8 @@ export default function RunForm({ run, onDone }) {
           <option value="new">+ New location…</option>
         </select>
         {form.gym_id === 'new' && (
-          <div className="mt-2 space-y-2 rounded-xl border border-line bg-raised p-3">
-            <input required className="input" placeholder="Location name (e.g. Atlas Hoops)" value={newGym.name}
-              onChange={e => setNewGym(g => ({ ...g, name: e.target.value }))} />
-            <input className="input" placeholder="Full address (for directions)" value={newGym.address}
-              onChange={e => setNewGym(g => ({ ...g, address: e.target.value }))} />
+          <div className="mt-2 rounded-xl border border-line bg-raised p-3">
+            <PlaceSearch name={newGym.name} address={newGym.address} onChange={setNewGym} />
           </div>
         )}
       </div>

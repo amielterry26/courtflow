@@ -1,5 +1,6 @@
 // Texts players.
 //   { action: 'approved', player_id }  — trainer approved a request → text the player their link
+//   { action: 'paid', signup_id }      — trainer ticked paid → text the player they're in
 //   { action: 'remind_run', run_id }   — trainer taps "Text reminder" on a run
 //   { action: 'reminders' }            — nightly cron: remind everyone on tomorrow's runs (once each)
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -53,7 +54,7 @@ async function remind(signups: any[]) {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
-  const { action, player_id, run_id } = await req.json().catch(() => ({}))
+  const { action, player_id, run_id, signup_id } = await req.json().catch(() => ({}))
 
   if (action === 'approved') {
     if (!(await isTrainer(req))) return json({ error: 'Not signed in' }, 401)
@@ -68,6 +69,19 @@ Deno.serve(async (req) => {
       : `You're approved for CourtFlow Hoops runs, ${p.first_name} 🏀 Pick a date and grab your spot: ${divisionUrl(p.division)}\nReply STOP to opt out.`
     if (!p.phone) return json({ sent: 0, error: 'no phone number on file' })
     const r = await sendSms(p.phone, body, true)
+    return json({ sent: r.ok ? 1 : 0, error: r.error })
+  }
+
+  if (action === 'paid') {
+    // Trainer confirmed a payment → let the player know they're in
+    if (!(await isTrainer(req))) return json({ error: 'Not signed in' }, 401)
+    const { data: s } = await db.from('run_signups').select(SIGNUP_FIELDS).eq('id', signup_id).single()
+    if (!s?.paid) return json({ sent: 0, error: 'not marked paid' })
+    if (!s.run_players.sms_opt_in || !s.run_players.phone) return json({ sent: 0, error: "they didn't opt in to texts" })
+    const run = s.runs
+    const where = run.gyms?.name ? ` at ${run.gyms.name}` : ''
+    const r = await sendSms(s.run_players.phone,
+      `✅ Payment received, ${s.run_players.first_name}. You're in for the CourtFlow Hoops ${run.division === 'youth' ? 'youth run' : 'run'} ${shortDate(run.run_date)} · ${timeRange(run.start_time, run.end_time)}${where}. See you on the court!`)
     return json({ sent: r.ok ? 1 : 0, error: r.error })
   }
 
