@@ -69,7 +69,7 @@ export default function AdminSettings() {
               value={form[f.key] ?? ''} onChange={e => setForm(s => ({ ...s, [f.key]: e.target.value }))} />
           </div>
         ))}
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-bad">{error}</p>}
         <div className="sticky bottom-4 pt-2">
           <button disabled={saving} className="btn-primary w-full py-3 text-base shadow-lg">
             {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save settings'}

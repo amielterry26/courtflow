@@ -8,6 +8,7 @@ import Calendar from '../components/Calendar'
 import RunCard from '../components/RunCard'
 import JoinSheet from '../components/JoinSheet'
 import ShareSheet from '../components/ShareSheet'
+import ThemeToggle from '../components/ThemeToggle'
 
 export default function Home() {
   const location = useLocation()
@@ -90,7 +91,10 @@ export default function Home() {
             <span className="font-display text-xl font-extrabold uppercase tracking-wide">CourtFlow Hoops</span>
             <span className="rounded bg-hoop px-1.5 py-0.5 font-display text-xs font-extrabold uppercase tracking-wider text-white">Runs</span>
           </span>
-          <Link to="/admin" className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-muted hover:text-fg">Admin</Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link to="/admin" className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-muted hover:text-fg">Admin</Link>
+          </div>
         </div>
       </header>
 
@@ -134,7 +138,7 @@ export default function Home() {
         </section>
 
         {welcome && (
-          <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+          <div className="mt-6 flex items-center justify-between gap-3 rounded-xl border border-good/30 bg-good/10 px-4 py-3 text-sm text-good">
             <span>{welcome}</span>
             <button onClick={() => setWelcome(null)}>×</button>
           </div>

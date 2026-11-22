@@ -118,7 +118,7 @@ export default function AdminPlayers() {
             </div>
             <input required type="tel" inputMode="tel" className="input" placeholder="Phone" value={form.phone}
               onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-bad">{error}</p>}
             <div className="flex gap-2">
               <button className="btn-primary flex-1">Add player</button>
               <button type="button" onClick={() => { setAdding(false); setError('') }} className="btn-ghost px-5">Cancel</button>

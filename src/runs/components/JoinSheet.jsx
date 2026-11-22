@@ -156,7 +156,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
               <input id="phone" required type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="(702) 555-1234"
                 value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-bad">{error}</p>}
             <button disabled={busy} className="btn-primary w-full py-3.5 text-base">{busy ? 'Sending…' : 'Send request'}</button>
             <button type="button" onClick={() => setStep('who')} className="w-full py-2 text-sm text-muted">← Back</button>
           </form>
@@ -194,13 +194,13 @@ export default function JoinSheet({ run, onClose, onJoined }) {
                     ))}
                   </div>
                 </div>
-                {error && <p className="text-sm text-red-400">{error}</p>}
+                {error && <p className="text-sm text-bad">{error}</p>}
                 <button disabled={!method || busy} onClick={() => join(method)} className="btn-primary w-full py-3.5 text-base">
                   {busy ? 'Saving…' : "I'm in"}
                 </button>
               </>
             )}
-            {isMember && error && <p className="text-sm text-red-400">{error}</p>}
+            {isMember && error && <p className="text-sm text-bad">{error}</p>}
           </div>
         )}
 

@@ -4,15 +4,18 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
-      // Runs site palette (runs.courtflowhoops.com) — dark "night court"
+      // Runs site palette (runs.courtflowhoops.com) — values live in index.css, light + dark
       colors: {
-        court: '#0c0d10',
-        surface: '#15171c',
-        raised: '#1e2128',
-        line: '#2b2f38',
-        fg: '#f4f1ea',
-        muted: '#9aa0ab',
-        hoop: { DEFAULT: '#ff6a1a', dark: '#e8560b', soft: '#ff6a1a1f', line: '#ff6a1a66' },
+        court: 'rgb(var(--court) / <alpha-value>)',
+        surface: 'rgb(var(--surface) / <alpha-value>)',
+        raised: 'rgb(var(--raised) / <alpha-value>)',
+        line: 'rgb(var(--line) / <alpha-value>)',
+        fg: 'rgb(var(--fg) / <alpha-value>)',
+        muted: 'rgb(var(--muted) / <alpha-value>)',
+        good: 'rgb(var(--good) / <alpha-value>)',
+        bad: 'rgb(var(--bad) / <alpha-value>)',
+        warn: 'rgb(var(--warn) / <alpha-value>)',
+        hoop: { DEFAULT: 'rgb(var(--hoop) / <alpha-value>)', dark: 'rgb(var(--hoop-dark) / <alpha-value>)', soft: 'rgb(var(--hoop) / 0.12)', line: 'rgb(var(--hoop) / 0.4)' },
       },
       fontFamily: {
         display: ['"Big Shoulders Display"', 'Impact', 'sans-serif'],

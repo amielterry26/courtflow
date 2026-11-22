@@ -47,7 +47,7 @@ export default function Calendar({ year, month, runsByDate, selected, onSelect, 
           const hasRun = runs.length > 0
 
           let cls = 'border-transparent text-fg/70 hover:bg-raised'
-          if (isSel) cls = 'border-hoop bg-hoop text-white shadow-[0_0_24px_-4px_#ff6a1a]'
+          if (isSel) cls = 'border-hoop bg-hoop text-white shadow-[0_0_24px_-4px_rgb(var(--hoop))]'
           else if (hasRun && live) cls = 'border-hoop-line bg-hoop-soft text-fg hover:bg-hoop/20'
           else if (hasRun) cls = 'border-line bg-raised text-muted line-through'
 

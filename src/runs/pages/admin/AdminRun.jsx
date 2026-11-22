@@ -81,7 +81,7 @@ export default function AdminRun() {
               <h1 className="font-display text-2xl font-extrabold uppercase">{shortDate(run.run_date)}</h1>
               <p className="text-sm text-muted">{timeRange(run.start_time, run.end_time)} · {run.gyms?.name ?? 'No location'} · ${Number(run.price)}</p>
               {run.notes && <p className="mt-1 text-sm text-muted">{run.notes}</p>}
-              {run.cancelled && <p className="mt-1 text-sm font-medium text-red-400">Cancelled</p>}
+              {run.cancelled && <p className="mt-1 text-sm font-medium text-bad">Cancelled</p>}
             </div>
             <button onClick={() => setEditing(true)} className="btn-ghost py-1.5 text-xs">Edit</button>
           </div>
@@ -116,7 +116,7 @@ export default function AdminRun() {
                 <p className="truncate font-medium">
                   {p.first_name} {p.last_name}
                   {p.is_mhoop && <span className="ml-1.5 text-xs text-hoop">⭐</span>}
-                  {p.status === 'pending' && <span className="ml-1.5 rounded bg-amber-500/15 px-1.5 text-xs text-amber-300">Request</span>}
+                  {p.status === 'pending' && <span className="ml-1.5 rounded bg-warn/15 px-1.5 text-xs text-warn">Request</span>}
                 </p>
                 <a href={`sms:+1${p.phone}`} className="text-xs text-muted">{formatPhone(p.phone)}</a>
               </div>
@@ -146,7 +146,7 @@ export default function AdminRun() {
 
       <div className="mt-8 flex gap-2">
         <button onClick={toggleCancelled} className="btn-ghost flex-1 text-sm">{run.cancelled ? 'Reopen run' : 'Cancel run'}</button>
-        <button onClick={deleteRun} className="btn flex-1 border border-red-500/30 text-sm text-red-400 hover:bg-red-500/10">Delete</button>
+        <button onClick={deleteRun} className="btn flex-1 border border-bad/30 text-sm text-bad hover:bg-bad/10">Delete</button>
       </div>
     </div>
   )

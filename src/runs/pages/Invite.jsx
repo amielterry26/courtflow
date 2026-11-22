@@ -62,7 +62,7 @@ export default function Invite() {
               <input id="phone" required type="tel" inputMode="tel" autoComplete="tel" className="input" placeholder="(702) 555-1234"
                 value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-bad">{error}</p>}
             <button disabled={busy || valid !== true} className="btn-primary w-full py-3 text-base">
               {busy ? 'Joining…' : "I'm in"}
             </button>

@@ -84,7 +84,7 @@ export default function RunCard({ run, onJoin, onShare, refreshKey }) {
                   </button>
                   {showMap && (
                     <iframe title="Map" src={maps.embed} loading="lazy"
-                      className="mt-2 h-48 w-full rounded-xl border border-line [filter:invert(0.9)_hue-rotate(180deg)]" />
+                      className="mt-2 h-48 w-full rounded-xl border border-line dark:[filter:invert(0.9)_hue-rotate(180deg)]" />
                   )}
                 </div>
               )}
@@ -126,9 +126,9 @@ export default function RunCard({ run, onJoin, onShare, refreshKey }) {
 function Tag({ tone = 'base', children }) {
   const tones = {
     base: 'bg-raised text-fg/85',
-    green: 'bg-green-500/10 text-green-400',
+    green: 'bg-good/10 text-good',
     muted: 'bg-raised text-muted',
-    red: 'bg-red-500/10 text-red-400',
+    red: 'bg-bad/10 text-bad',
   }
   return <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${tones[tone]}`}>{children}</span>
 }

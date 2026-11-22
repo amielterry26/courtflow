@@ -8,6 +8,7 @@ import AdminPlayers from './AdminPlayers'
 import AdminLocations from './AdminLocations'
 import AdminSettings from './AdminSettings'
 import { setBadge } from '../../lib/push'
+import ThemeToggle from '../../components/ThemeToggle'
 
 const tabs = [
   { to: '/admin', label: 'Runs', end: true },
@@ -60,7 +61,10 @@ export default function Admin() {
           <Link to="/" className="flex items-center gap-1.5 font-display text-[17px] font-extrabold uppercase">
             <span className="text-hoop">●</span> CourtFlow Hoops <span className="text-muted">· Runs admin</span>
           </Link>
-          <button onClick={() => supabase.auth.signOut()} className="text-sm text-muted">Sign out</button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button onClick={() => supabase.auth.signOut()} className="text-sm text-muted">Sign out</button>
+          </div>
         </div>
         <nav className="mx-auto flex max-w-2xl gap-1 overflow-x-auto px-4 pb-2">
           {tabs.map(t => (
@@ -117,7 +121,7 @@ function Login() {
           <label className="label" htmlFor="pw">Password</label>
           <input id="pw" type="password" required className="input" value={password} onChange={e => setPassword(e.target.value)} />
         </div>
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-bad">{error}</p>}
         <button disabled={loading} className="btn-primary w-full py-3">{loading ? 'Signing in…' : 'Sign in'}</button>
       </form>
     </div>

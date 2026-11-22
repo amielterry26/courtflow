@@ -111,7 +111,7 @@ export default function RunForm({ run, onDone }) {
         <label className="label" htmlFor="notes">Notes</label>
         <input id="notes" className="input" placeholder="Bring a dark & light shirt" value={form.notes} onChange={set('notes')} />
       </div>
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-bad">{error}</p>}
       <div className="flex gap-2 pt-1">
         <button disabled={saving} className="btn-primary flex-1 py-3">{saving ? 'Saving…' : run ? 'Save changes' : form.repeat !== '0' ? `Add ${form.count} runs` : 'Add run'}</button>
         <button type="button" onClick={onDone} className="btn-ghost px-5">Cancel</button>

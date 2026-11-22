@@ -55,9 +55,9 @@ export default function AdminRequests({ onChange }) {
     <div className="space-y-3">
       <PushSetup compact />
       {approved.map(p => (
-        <div key={p.id} className="rounded-2xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-300">
+        <div key={p.id} className="rounded-2xl border border-good/30 bg-good/10 p-4 text-sm text-good">
           <p className="font-semibold">✓ {p.first_name} {p.last_name} is approved</p>
-          <p className="mt-0.5 text-green-300/80">Send them the link so they can join and pay:</p>
+          <p className="mt-0.5 text-good/80">Send them the link so they can join and pay:</p>
           <a href={smsLink(p.phone, approvalText(p))} className="btn mt-3 w-full bg-green-600 py-3 text-white">💬 Text {p.first_name}</a>
         </div>
       ))}

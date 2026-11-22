@@ -45,13 +45,13 @@ export default function AdminRuns() {
             <Link key={r.id} to={`/admin/runs/${r.id}`} className="card flex items-center justify-between gap-3 p-4 hover:bg-line">
               <div className="min-w-0">
                 <p className="font-semibold">
-                  {shortDate(r.run_date)} {r.cancelled && <span className="ml-1 text-xs font-medium text-red-400">Cancelled</span>}
+                  {shortDate(r.run_date)} {r.cancelled && <span className="ml-1 text-xs font-medium text-bad">Cancelled</span>}
                 </p>
                 <p className="truncate text-sm text-muted">{timeRange(r.start_time, r.end_time)} · {r.gyms?.name ?? 'No location'}</p>
               </div>
               <div className="shrink-0 text-right">
                 <p className="text-sm font-semibold">{going}{r.capacity ? `/${r.capacity}` : ''} going</p>
-                <p className={`text-xs ${paid < going ? 'text-hoop' : 'text-green-400'}`}>{paid} paid</p>
+                <p className={`text-xs ${paid < going ? 'text-hoop' : 'text-good'}`}>{paid} paid</p>
               </div>
             </Link>
           )
