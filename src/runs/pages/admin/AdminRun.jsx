@@ -19,10 +19,11 @@ export default function AdminRun() {
 
   async function load() {
     const { data } = await supabase.from('runs')
-      .select('*, gyms(name), run_signups(id, paid, payment_method, created_at, run_players(id, first_name, last_name, phone, status, is_mhoop))')
+      .select('*, gyms(name), run_signups(id, paid, payment_method, created_at, run_players(id, first_name, last_name, phone, status, is_member))')
       .eq('id', id).single()
     setRun(data)
-    const { data: all } = await supabase.from('run_players').select('id, first_name, last_name').eq('status', 'approved').order('first_name')
+    const { data: all } = await supabase.from('run_players').select('id, first_name, last_name')
+      .eq('status', 'approved').eq('division', data?.division ?? 'adult').order('first_name')
     setPlayers(all ?? [])
   }
 
@@ -124,7 +125,7 @@ export default function AdminRun() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">
                   {p.first_name} {p.last_name}
-                  {p.is_mhoop && <span className="ml-1.5 text-xs text-hoop">⭐</span>}
+                  {p.is_member && <span className="ml-1.5 text-xs text-hoop">⭐</span>}
                   {p.status === 'pending' && <span className="ml-1.5 rounded bg-warn/15 px-1.5 text-xs text-warn">Request</span>}
                 </p>
                 <a href={`sms:+1${p.phone}`} className="text-xs text-muted">{formatPhone(p.phone)}</a>

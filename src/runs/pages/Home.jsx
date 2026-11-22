@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { getMe } from '../lib/me'
 import { fromKey, monthGrid, toKey, todayKey, relativeDay, shortDate, timeRange, weekday } from '../lib/dates'
-import { membershipLink, useSettings } from '../lib/pay'
 import Calendar from '../components/Calendar'
 import RunCard from '../components/RunCard'
 import JoinSheet from '../components/JoinSheet'
 import ShareSheet from '../components/ShareSheet'
-import ThemeToggle from '../components/ThemeToggle'
+import SiteHeader from '../components/SiteHeader'
+import UnlimitedPill from '../components/UnlimitedPill'
 
-export default function Home() {
+export default function Home({ division }) {
   const location = useLocation()
   const [params, setParams] = useSearchParams()
   const linkedDate = /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') ?? '') ? params.get('date') : null
@@ -24,12 +23,11 @@ export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [welcome, setWelcome] = useState(location.state?.welcome ?? null)
   const panelRef = useRef(null)
-  const settings = useSettings()
 
   // Runs for the visible 6-week grid
   useEffect(() => {
     const grid = monthGrid(ym.y, ym.m)
-    supabase.rpc('runs_calendar', { p_from: toKey(grid[0]), p_to: toKey(grid[41]) }).then(({ data }) => {
+    supabase.rpc('runs_calendar', { p_from: toKey(grid[0]), p_to: toKey(grid[41]), p_division: division }).then(({ data }) => {
       const list = data ?? []
       setRuns(list)
       // Link from an approval text (?join=<run id>) opens the join sheet
@@ -41,13 +39,13 @@ export default function Home() {
         setParams(params, { replace: true })
       }
     })
-  }, [ym, refreshKey])
+  }, [ym, refreshKey, division])
 
   // Next few runs for the hero, regardless of month
   useEffect(() => {
     const until = new Date()
     until.setDate(until.getDate() + 120)
-    supabase.rpc('runs_calendar', { p_from: todayKey(), p_to: toKey(until) }).then(({ data }) => {
+    supabase.rpc('runs_calendar', { p_from: todayKey(), p_to: toKey(until), p_division: division }).then(({ data }) => {
       const list = (data ?? []).filter(r => !r.cancelled)
       setUpcoming(list)
       // First load without a shared date: jump to the next run
@@ -57,7 +55,7 @@ export default function Home() {
         setYm({ y: d.getFullYear(), m: d.getMonth() })
       }
     })
-  }, [refreshKey])
+  }, [refreshKey, division])
 
   const runsByDate = useMemo(() => {
     const map = {}
@@ -77,36 +75,23 @@ export default function Home() {
     if (scroll && window.innerWidth < 1024) setTimeout(() => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
-  const me = getMe()
   const selDate = fromKey(selected)
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-court text-fg">
+    <div className="relative min-h-screen overflow-x-clip bg-court text-fg">
       <CourtLines />
 
-      <header className="relative z-10 border-b border-line/70 bg-court/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <span className="flex items-center gap-2">
-            <Ball />
-            <span className="font-display text-xl font-extrabold uppercase tracking-wide">CourtFlow Hoops</span>
-            <span className="rounded bg-hoop px-1.5 py-0.5 font-display text-xs font-extrabold uppercase tracking-wider text-white">Runs</span>
-          </span>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link to="/admin" className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-muted hover:text-fg">Admin</Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader division={division} />
 
-      <main className="relative z-10 mx-auto max-w-6xl px-4 pb-16">
+      <main className="relative z-10 mx-auto max-w-6xl px-4 pb-28">
         {/* Hero */}
         <section className="grid items-end gap-8 pt-10 sm:pt-16 lg:grid-cols-[1.1fr_1fr]">
           <div>
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-hoop">
-              <span className="h-px w-6 bg-hoop" /> Invite only · Open gym
+              <span className="h-px w-6 bg-hoop" /> {division === 'youth' ? 'Invite only · HS & MS' : 'Invite only · Open gym'}
             </p>
             <h1 className="mt-3 font-display text-[64px] font-black uppercase leading-[0.85] tracking-tight sm:text-[96px]">
-              Pickup<br /><span className="text-hoop">Runs.</span>
+              {division === 'youth' ? 'Youth' : 'Pickup'}<br /><span className="text-hoop">Runs.</span>
             </h1>
             <p className="mt-4 max-w-sm text-[15px] text-fg/70">
               Pick a date, grab your spot, pay, and hoop. New here? Request to join.
@@ -177,29 +162,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Membership */}
-        {settings?.stripe_membership_url && (
-          <section className="mt-8 overflow-hidden rounded-2xl border border-hoop-line bg-gradient-to-br from-hoop/20 via-surface to-surface p-6 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-8">
-            <div>
-              <p className="label text-hoop">Membership</p>
-              <p className="font-display text-5xl font-black leading-none">
-                ${Number(settings.member_price)}<span className="text-xl text-muted">/mo</span>
-              </p>
-              <p className="mt-2 text-sm text-fg/75">{settings.member_runs_per_month} runs a month. No paying each time. Cancel anytime.</p>
-            </div>
-            <div className="mt-5 flex flex-col items-start gap-2 sm:mt-0 sm:items-end">
-              <a href={membershipLink(settings, me?.player_id)} target="_blank" rel="noopener noreferrer" className="btn-primary px-6 py-3 text-base">
-                Become a member
-              </a>
-              {settings.stripe_portal_url && (
-                <a href={settings.stripe_portal_url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted underline underline-offset-2">
-                  Manage or cancel
-                </a>
-              )}
-            </div>
-          </section>
-        )}
-
         <footer className="mt-12 text-center font-display text-sm font-bold uppercase tracking-[0.2em] text-muted/60">
           CourtFlow Hoops · Runs · Invite only
         </footer>
@@ -209,16 +171,8 @@ export default function Home() {
         <JoinSheet run={joining} onClose={() => setJoining(null)} onJoined={() => setRefreshKey(k => k + 1)} />
       )}
       {sharing && <ShareSheet run={sharing} onClose={() => setSharing(null)} />}
+      {!joining && !sharing && <UnlimitedPill division={division} />}
     </div>
-  )
-}
-
-function Ball() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden="true">
-      <circle cx="12" cy="12" r="11" fill="#ff6a1a" />
-      <path d="M1 12h22M12 1v22M4.2 4.2c3.5 3 3.5 12.6 0 15.6M19.8 4.2c-3.5 3-3.5 12.6 0 15.6" stroke="#0c0d10" strokeWidth="1.4" fill="none" />
-    </svg>
   )
 }
 

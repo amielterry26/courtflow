@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { loadSettings } from '../../lib/pay'
 import PushSetup from '../../components/PushSetup'
+import { useAdminDivision } from '../../lib/adminDivision'
+import { DIVISION_LABELS } from '../../lib/division'
 
 const FIELDS = [
   { section: 'Payments', hint: 'Leave one blank to hide it as an option.' },
@@ -13,11 +15,10 @@ const FIELDS = [
   { key: 'notify_email', label: 'Also send requests to', placeholder: 'you@gmail.com' },
   { section: 'Pricing' },
   { key: 'default_price', label: 'Default price per run ($)', type: 'number' },
-  { section: 'Mhoopship (Stripe)', hint: 'The mhoopship card shows on the site once the Payment Link is filled in.' },
-  { key: 'stripe_mhoopship_url', label: 'Stripe Payment Link', placeholder: 'https://buy.stripe.com/...' },
+  { section: 'Unlimited membership (Stripe)', hint: 'The Unlimited button links here. Paste your Stripe subscription Payment Link.' },
+  { key: 'member_price', label: 'Unlimited price per month ($)', type: 'number' },
+  { key: 'stripe_membership_url', label: 'Stripe Payment Link (subscription)', placeholder: 'https://buy.stripe.com/...' },
   { key: 'stripe_portal_url', label: 'Stripe customer portal link (cancel)', placeholder: 'https://billing.stripe.com/p/login/...' },
-  { key: 'mhoop_price', label: 'Mhoopship price per month ($)', type: 'number' },
-  { key: 'mhoop_runs_per_month', label: 'Runs included per month', type: 'number' },
 ]
 
 export default function AdminSettings() {
@@ -25,10 +26,12 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const division = useAdminDivision()
 
   useEffect(() => {
-    supabase.from('run_settings').select('*').eq('id', 1).single().then(({ data }) => setForm(data ?? {}))
-  }, [])
+    setForm(null)
+    supabase.from('run_settings').select('*').eq('division', division).single().then(({ data }) => setForm(data ?? {}))
+  }, [division])
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -42,10 +45,10 @@ export default function AdminSettings() {
     }
     payload.cashapp_tag = payload.cashapp_tag?.replace(/^\$/, '') || null
     payload.pay_name = payload.pay_name || 'Amiel'
-    const { error } = await supabase.from('run_settings').update(payload).eq('id', 1)
+    const { error } = await supabase.from('run_settings').update(payload).eq('division', division)
     setSaving(false)
     if (error) return setError(error.message)
-    loadSettings(true)
+    loadSettings(division, true)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
@@ -56,6 +59,7 @@ export default function AdminSettings() {
     <div className="space-y-6">
       <PushSetup />
       <form onSubmit={handleSubmit} className="space-y-3">
+        <p className="rounded-xl bg-raised px-3 py-2 text-sm text-muted">Editing <b className="text-fg">{DIVISION_LABELS[division]}</b> settings. Switch at the top.</p>
         {FIELDS.map(f => f.section ? (
           <div key={f.section} className="pt-4 first:pt-0">
             <h2 className="font-display text-xl font-extrabold uppercase">{f.section}</h2>

@@ -2,19 +2,19 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import { monthDay } from './dates'
 
-// Payment handles, Stripe links and prices live in run_settings (edited in admin)
-let settingsPromise = null
+// Payment handles, Stripe links and prices live in run_settings, one row per division (edited in admin)
+const settingsCache = {}
 
-export function loadSettings(fresh = false) {
-  if (!settingsPromise || fresh) {
-    settingsPromise = supabase.from('run_settings').select('*').eq('id', 1).single().then(({ data }) => data ?? {})
+export function loadSettings(division = 'adult', fresh = false) {
+  if (!settingsCache[division] || fresh) {
+    settingsCache[division] = supabase.from('run_settings').select('*').eq('division', division).single().then(({ data }) => data ?? {})
   }
-  return settingsPromise
+  return settingsCache[division]
 }
 
-export function useSettings() {
+export function useSettings(division = 'adult') {
   const [settings, setSettings] = useState(null)
-  useEffect(() => { loadSettings().then(setSettings) }, [])
+  useEffect(() => { loadSettings(division).then(setSettings) }, [division])
   return settings
 }
 
@@ -73,7 +73,7 @@ export function payInstructions(method, run, me, s) {
         copy: note,
       }
     case 'member':
-      return { steps: ['Covered by your membership. See you on the court.'] }
+      return { steps: ['Covered by your Unlimited membership. See you on the court.'] }
     default:
       return { steps: [`Bring $${amount} cash to the run.`] }
   }

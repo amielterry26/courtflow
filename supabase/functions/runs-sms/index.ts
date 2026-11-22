@@ -3,7 +3,7 @@
 //   { action: 'remind_run', run_id }   — trainer taps "Text reminder" on a run
 //   { action: 'reminders' }            — nightly cron: remind everyone on tomorrow's runs (once each)
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { pacificHour, pacificToday, runLink, sendSms, shortDate, timeRange } from '../_shared/sms.ts'
+import { divisionUrl, pacificHour, pacificToday, runLink, sendSms, shortDate, timeRange } from '../_shared/sms.ts'
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -20,16 +20,16 @@ async function isTrainer(req: Request) {
   return !!user
 }
 
-const RUN_FIELDS = 'id, run_date, start_time, end_time, cancelled, gyms(name, address)'
+const RUN_FIELDS = 'id, run_date, start_time, end_time, cancelled, division, gyms(name, address)'
 const SIGNUP_FIELDS = `id, paid, payment_method, reminded_at, run_players!inner(first_name, phone, status), runs!inner(${RUN_FIELDS})`
 
 function reminderText(s: any) {
   const run = s.runs
   const where = [run.gyms?.name, run.gyms?.address].filter(Boolean).join('\n')
   const maps = run.gyms?.address ? `https://maps.google.com/?q=${encodeURIComponent(run.gyms.address)}` : null
-  const status = s.payment_method === 'member' ? 'Member run ✅' : s.paid ? "You're paid ✅" : null
+  const status = s.payment_method === 'member' ? 'Unlimited member ✅' : s.paid ? "You're paid ✅" : null
   return [
-    `🏀 ${s.run_players.first_name}, you're on for the CourtFlow Hoops run tomorrow, ${shortDate(run.run_date)} · ${timeRange(run.start_time, run.end_time)}`,
+    `🏀 ${s.run_players.first_name}, you're on for the CourtFlow Hoops ${run.division === 'youth' ? 'youth run' : 'run'} tomorrow, ${shortDate(run.run_date)} · ${timeRange(run.start_time, run.end_time)}`,
     where,
     maps && `Directions: ${maps}`,
     status,
@@ -58,13 +58,13 @@ Deno.serve(async (req) => {
   if (action === 'approved') {
     if (!(await isTrainer(req))) return json({ error: 'Not signed in' }, 401)
     const { data: p } = await db.from('run_players')
-      .select('first_name, phone, status, run_signups(runs(id, run_date))').eq('id', player_id).single()
+      .select('first_name, phone, status, division, run_signups(runs(id, run_date, division))').eq('id', player_id).single()
     if (!p || p.status !== 'approved') return json({ error: 'Player not approved' }, 400)
     const run = (p.run_signups ?? []).map((s: any) => s.runs).filter((r: any) => r.run_date >= pacificToday())
       .sort((a: any, b: any) => a.run_date.localeCompare(b.run_date))[0]
     const body = run
       ? `You're approved for CourtFlow Hoops runs, ${p.first_name} 🏀 Tap to lock in your spot for ${shortDate(run.run_date)}: ${runLink(run, true)}\nReply STOP to opt out.`
-      : `You're approved for CourtFlow Hoops runs, ${p.first_name} 🏀 Pick a date and grab your spot: https://runs.courtflowhoops.com\nReply STOP to opt out.`
+      : `You're approved for CourtFlow Hoops runs, ${p.first_name} 🏀 Pick a date and grab your spot: ${divisionUrl(p.division)}\nReply STOP to opt out.`
     const r = await sendSms(p.phone, body)
     return json({ sent: r.ok ? 1 : 0, error: r.error })
   }

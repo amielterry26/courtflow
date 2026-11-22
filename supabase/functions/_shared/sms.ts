@@ -47,8 +47,12 @@ export function timeRange(start: string, end: string | null) {
   return end ? `${formatTime(start)}–${formatTime(end)}` : formatTime(start)
 }
 
-export function runLink(run: { id: string; run_date: string }, join = false) {
-  return `${SITE_URL}/?date=${run.run_date}${join ? `&join=${run.id}` : ''}`
+export function divisionUrl(division?: string) {
+  return `${SITE_URL}${division === 'youth' ? '/youth' : ''}`
+}
+
+export function runLink(run: { id: string; run_date: string; division?: string }, join = false) {
+  return `${divisionUrl(run.division)}/?date=${run.run_date}${join ? `&join=${run.id}` : ''}`
 }
 
 // Today's date in Las Vegas

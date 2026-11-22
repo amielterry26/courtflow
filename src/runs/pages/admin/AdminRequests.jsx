@@ -5,6 +5,7 @@ import { shortDate, todayKey } from '../../lib/dates'
 import { formatPhone, smsLink } from '../../lib/pay'
 import { runUrl } from '../../lib/notify'
 import PushSetup from '../../components/PushSetup'
+import { basePath } from '../../lib/division'
 
 // The "Approve" link in the request email lands here with ?approve=<player id>
 export default function AdminRequests({ onChange }) {
@@ -17,7 +18,7 @@ export default function AdminRequests({ onChange }) {
 
   async function load() {
     const { data } = await supabase.from('run_players')
-      .select('*, run_signups(id, runs(id, run_date))')
+      .select('*, run_signups(id, runs(id, run_date, division))')
       .eq('status', 'pending').order('created_at')
     const list = data ?? []
     // Request from the email link goes first
@@ -26,7 +27,7 @@ export default function AdminRequests({ onChange }) {
     onChange(list.length)
     // Link already handled (approved earlier)? Show its text button again
     if (highlight && !list.some(p => p.id === highlight) && !approved.some(p => p.id === highlight)) {
-      const { data: p } = await supabase.from('run_players').select('*, run_signups(id, runs(id, run_date))').eq('id', highlight).single()
+      const { data: p } = await supabase.from('run_players').select('*, run_signups(id, runs(id, run_date, division))').eq('id', highlight).single()
       if (p?.status === 'approved') setApproved(a => [...a, p])
     }
   }
@@ -51,7 +52,7 @@ export default function AdminRequests({ onChange }) {
     const run = p.run_signups.map(s => s.runs).filter(r => r.run_date >= todayKey()).sort((a, b) => a.run_date.localeCompare(b.run_date))[0]
     return run
       ? `You're approved for CourtFlow Hoops runs 🏀 Tap to lock in your spot for ${shortDate(run.run_date)}: ${runUrl(run, true)}`
-      : `You're approved for CourtFlow Hoops runs 🏀 Pick a date and grab your spot: ${window.location.origin}`
+      : `You're approved for CourtFlow Hoops runs 🏀 Pick a date and grab your spot: ${window.location.origin}${basePath(p.division)}`
   }
 
   return (
@@ -79,7 +80,10 @@ export default function AdminRequests({ onChange }) {
 
       {requests.map(p => (
         <div key={p.id} className={`card p-4 ${p.id === highlight ? 'border-hoop ring-1 ring-hoop' : ''}`}>
-          <p className="font-semibold">{p.first_name} {p.last_name}</p>
+          <p className="font-semibold">
+            {p.first_name} {p.last_name}
+            {p.division === 'youth' && <span className="ml-2 rounded bg-hoop-soft px-1.5 py-0.5 text-xs font-semibold text-hoop">Youth</span>}
+          </p>
           <a href={`sms:+1${p.phone}`} className="text-sm text-muted">{formatPhone(p.phone)}</a>
           {p.run_signups.length > 0 && (
             <p className="mt-1 text-sm text-fg/75">

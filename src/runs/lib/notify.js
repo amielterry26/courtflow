@@ -1,11 +1,12 @@
 import { shortDate, timeRange } from './dates'
 import { formatPhone, loadSettings } from './pay'
+import { basePath } from './division'
 
 // Emails Amiel when someone requests to join (same Web3Forms key as the intake form)
 export async function notifyRequest(player, run, phone) {
   const key = import.meta.env.VITE_WEB3FORMS_KEY
   if (!key) return console.warn('VITE_WEB3FORMS_KEY not set — request email skipped')
-  const s = await loadSettings()
+  const s = await loadSettings(run?.division)
   const approveUrl = `${window.location.origin}/admin/requests?approve=${player.player_id}`
   try {
     const res = await fetch('https://api.web3forms.com/submit', {
@@ -13,7 +14,7 @@ export async function notifyRequest(player, run, phone) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         access_key: key,
-        subject: `🏀 Run request: ${player.first_name} ${player.last_name}`,
+        subject: `🏀 ${run?.division === 'youth' ? 'Youth run' : 'Run'} request: ${player.first_name} ${player.last_name}`,
         from_name: 'CourtFlow Hoops Runs',
         ...(s.notify_email ? { cc: s.notify_email } : {}),
         message: [
@@ -33,9 +34,9 @@ export async function notifyRequest(player, run, phone) {
 }
 
 export function runUrl(run, join = false) {
-  return `${window.location.origin}/?date=${run.run_date}${join ? `&join=${run.id}` : ''}`
+  return `${window.location.origin}${basePath(run.division)}/?date=${run.run_date}${join ? `&join=${run.id}` : ''}`
 }
 
 export function shareText(run) {
-  return `🏀 Open run ${shortDate(run.run_date)} · ${timeRange(run.start_time, run.end_time)}${run.gym_name ? ` at ${run.gym_name}` : ''}. Invite only — register here:`
+  return `🏀 ${run.division === 'youth' ? 'Youth (HS/MS) run' : 'Open run'} ${shortDate(run.run_date)} · ${timeRange(run.start_time, run.end_time)}${run.gym_name ? ` at ${run.gym_name}` : ''}. Invite only — register here:`
 }

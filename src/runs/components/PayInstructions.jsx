@@ -2,7 +2,7 @@ import { payInstructions, useSettings } from '../lib/pay'
 import CopyButton from './CopyButton'
 
 export default function PayInstructions({ method, run, me }) {
-  const settings = useSettings()
+  const settings = useSettings(run.division)
   if (!settings) return null
   const p = payInstructions(method, run, me, settings)
   return (

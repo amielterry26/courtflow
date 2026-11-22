@@ -107,12 +107,12 @@ export default function RunCard({ run, onJoin, onShare, refreshKey }) {
                   <p className="text-sm text-fg/75">
                     Payment pending{signup.payment_method ? ` (${METHOD_LABELS[signup.payment_method]})` : ''}. The roster unlocks once it's confirmed.
                   </p>
-                  {signup.payment_method && getMe() && (
+                  {signup.payment_method && getMe(run.division) && (
                     <button onClick={() => setShowPay(s => !s)} className="mt-2 text-sm font-semibold text-hoop">
                       {showPay ? 'Hide' : 'How to pay →'}
                     </button>
                   )}
-                  {showPay && <div className="mt-3"><PayInstructions method={signup.payment_method} run={run} me={getMe()} /></div>}
+                  {showPay && <div className="mt-3"><PayInstructions method={signup.payment_method} run={run} me={getMe(run.division)} /></div>}
                 </div>
               )}
             </div>

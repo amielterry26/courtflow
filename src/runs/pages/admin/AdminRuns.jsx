@@ -3,16 +3,18 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { shortDate, timeRange, todayKey } from '../../lib/dates'
 import RunForm from './RunForm'
+import { useAdminDivision } from '../../lib/adminDivision'
 
 export default function AdminRuns() {
   const [runs, setRuns] = useState([])
   const [showPast, setShowPast] = useState(false)
   const [adding, setAdding] = useState(false)
+  const division = useAdminDivision()
 
-  useEffect(() => { load() }, [showPast])
+  useEffect(() => { load() }, [showPast, division])
 
   async function load() {
-    let q = supabase.from('runs').select('*, gyms(name), run_signups(paid)')
+    let q = supabase.from('runs').select('*, gyms(name), run_signups(paid)').eq('division', division)
     q = showPast
       ? q.lt('run_date', todayKey()).order('run_date', { ascending: false }).limit(30)
       : q.gte('run_date', todayKey()).order('run_date').order('start_time')
@@ -36,7 +38,7 @@ export default function AdminRuns() {
 
       <div className="space-y-2.5">
         {runs.length === 0 && (
-          <div className="card p-8 text-center text-sm text-muted">{showPast ? 'No past runs.' : 'No upcoming runs. Add one.'}</div>
+          <div className="card p-8 text-center text-sm text-muted">{showPast ? 'No past runs.' : `No upcoming ${division === 'youth' ? 'youth ' : ''}runs. Add one.`}</div>
         )}
         {runs.map(r => {
           const going = r.run_signups.length

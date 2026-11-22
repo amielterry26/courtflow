@@ -34,17 +34,17 @@ Deno.serve(async (req) => {
       .update({ notified_at: new Date().toISOString() })
       .eq('id', player_id).eq('status', 'pending').is('notified_at', null)
       .gte('created_at', new Date(Date.now() - 10 * 60_000).toISOString())
-      .select('id, first_name, last_name, phone, run_signups(runs(run_date))')
+      .select('id, first_name, last_name, phone, division, run_signups(runs(run_date))')
       .maybeSingle()
     if (!p) return json({ sent: 0 })
-    payload = { title: '🏀 New run request', body: `${p.first_name} ${p.last_name} wants to join. Tap to approve.`, url: `/admin/requests?approve=${p.id}` }
+    payload = { title: p.division === 'youth' ? '🏀 New youth run request' : '🏀 New run request', body: `${p.first_name} ${p.last_name} wants to join. Tap to approve.`, url: `/admin/requests?approve=${p.id}` }
 
     const admin = Deno.env.get('RUNS_ADMIN_PHONE')
     if (admin) {
       const wants = (p.run_signups ?? []).map((s: any) => shortDate(s.runs.run_date)).join(', ')
       const d = p.phone
       await sendSms(admin, [
-        `🏀 New run request: ${p.first_name} ${p.last_name} (${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`,
+        `🏀 New ${p.division === 'youth' ? 'YOUTH ' : ''}run request: ${p.first_name} ${p.last_name} (${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`,
         wants && `Wants: ${wants}`,
         `Approve: ${SITE_URL}${payload.url}`,
       ].filter(Boolean).join('\n'))

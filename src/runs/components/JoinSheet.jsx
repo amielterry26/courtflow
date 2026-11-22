@@ -10,30 +10,31 @@ import PayInstructions from './PayInstructions'
 // Steps: who → (new → requested) | pay → done
 // Members skip picking a payment method.
 export default function JoinSheet({ run, onClose, onJoined }) {
-  const [me, setMeState] = useState(getMe())
+  const division = run.division
+  const [me, setMeState] = useState(getMe(division))
   const [step, setStep] = useState(me ? 'pay' : 'who')
   const [names, setNames] = useState(null)
-  const [pickedId, setPickedId] = useState(getPending()?.player_id ?? '')
+  const [pickedId, setPickedId] = useState(getPending(division)?.player_id ?? '')
   const [method, setMethod] = useState('')
   const [form, setForm] = useState({ first: '', last: '', phone: '' })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [memberFallback, setMemberFallback] = useState(false)
-  const settings = useSettings()
+  const settings = useSettings(division)
 
   useEffect(() => {
-    supabase.rpc('runs_player_names').then(({ data }) => {
+    supabase.rpc('runs_player_names', { p_division: division }).then(({ data }) => {
       const list = data ?? []
       setNames(list)
-      const current = getMe()
+      const current = getMe(division)
       const fresh = current && list.find(n => n.id === current.player_id)
       if (fresh) {
         remember({ ...current, is_member: fresh.is_member })
         return
       }
-      if (current) { forgetMe(); setMeState(null); setStep('who') }
+      if (current) { forgetMe(division); setMeState(null); setStep('who') }
       // Requested earlier on this phone and now approved → straight to paying
-      const pending = getPending()
+      const pending = getPending(division)
       const approved = pending && list.find(n => n.id === pending.player_id)
       if (approved) {
         remember({ player_id: approved.id, first_name: approved.first_name, last_name: approved.last_name, is_member: approved.is_member })
@@ -43,7 +44,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
   }, [])
 
   function remember(next) {
-    setMe(next)
+    setMe(division, next)
     setMeState(next)
   }
 
@@ -55,7 +56,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
   }
 
   function notMe() {
-    forgetMe()
+    forgetMe(division)
     setMeState(null)
     setPickedId('')
     setStep('who')
@@ -78,7 +79,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
       return
     }
     if (data.status === 'pending') {
-      setPending({ player_id: data.player_id })
+      setPending(division, { player_id: data.player_id })
       await Promise.all([notifyRequest(data, run, form.phone), pushRequest(data.player_id)])
     }
     setBusy(false)
@@ -167,14 +168,14 @@ export default function JoinSheet({ run, onClose, onJoined }) {
             <div className="flex items-center justify-between rounded-xl bg-raised px-4 py-3">
               <span className="text-sm">
                 <b>{me.first_name} {me.last_name}</b>
-                {isMember && <span className="ml-2 rounded bg-hoop-soft px-1.5 py-0.5 text-xs font-semibold text-hoop">⭐ Member</span>}
+                {isMember && <span className="ml-2 rounded bg-hoop-soft px-1.5 py-0.5 text-xs font-semibold text-hoop">♾ Unlimited</span>}
               </span>
               <button onClick={notMe} className="text-xs font-semibold text-hoop">Not you?</button>
             </div>
 
             {isMember ? (
               <>
-                <p className="text-sm text-fg/75">Your membership covers this run. Nothing to pay.</p>
+                <p className="text-sm text-fg/75">You're on Unlimited. Nothing to pay.</p>
                 <button disabled={busy} onClick={() => join('member')} className="btn-primary w-full py-3.5 text-base">
                   {busy ? 'Saving…' : 'Lock in my spot'}
                 </button>
@@ -209,7 +210,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
             <div className="rounded-xl border border-hoop-line bg-hoop-soft px-4 py-3">
               <p className="font-display text-2xl font-extrabold uppercase text-hoop">You're on the list 🏀</p>
               <p className="text-sm text-fg/80">
-                {method === 'member' ? 'Member run booked. See you on the court.' : "Once your payment's confirmed you'll see who else is running."}
+                {method === 'member' ? 'Unlimited run booked. See you on the court.' : "Once your payment's confirmed you'll see who else is running."}
               </p>
             </div>
             {method !== 'member' && <PayInstructions method={method} run={run} me={me} />}

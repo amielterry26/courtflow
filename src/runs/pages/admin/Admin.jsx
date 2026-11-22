@@ -9,6 +9,8 @@ import AdminLocations from './AdminLocations'
 import AdminSettings from './AdminSettings'
 import { setBadge } from '../../lib/push'
 import ThemeToggle from '../../components/ThemeToggle'
+import { AdminDivision } from '../../lib/adminDivision'
+import { DIVISIONS, DIVISION_LABELS } from '../../lib/division'
 
 const tabs = [
   { to: '/admin', label: 'Runs', end: true },
@@ -21,6 +23,14 @@ const tabs = [
 export default function Admin() {
   const [user, setUser] = useState(undefined)
   const [pending, setPending] = useState(0)
+  const [division, setDivision] = useState(() => {
+    try { return localStorage.getItem('runs-admin-division') || 'adult' } catch { return 'adult' }
+  })
+
+  function pickDivision(d) {
+    setDivision(d)
+    try { localStorage.setItem('runs-admin-division', d) } catch { /* ignore */ }
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
@@ -66,6 +76,17 @@ export default function Admin() {
             <button onClick={() => supabase.auth.signOut()} className="text-sm text-muted">Sign out</button>
           </div>
         </div>
+        <div className="mx-auto flex max-w-2xl px-4 pb-2">
+          <div className="flex w-full rounded-xl border border-line bg-raised p-1">
+            {DIVISIONS.map(d => (
+              <button key={d} onClick={() => pickDivision(d)}
+                className={`flex-1 rounded-lg py-1.5 text-sm font-bold uppercase tracking-wide transition
+                  ${d === division ? 'bg-fg text-court' : 'text-muted hover:text-fg'}`}>
+                {DIVISION_LABELS[d]}
+              </button>
+            ))}
+          </div>
+        </div>
         <nav className="mx-auto flex max-w-2xl gap-1 overflow-x-auto px-4 pb-2">
           {tabs.map(t => (
             <NavLink key={t.to} to={t.to} end={t.end}
@@ -81,14 +102,16 @@ export default function Admin() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-6 pb-20">
-        <Routes>
-          <Route index element={<AdminRuns />} />
-          <Route path="runs/:id" element={<AdminRun />} />
-          <Route path="requests" element={<AdminRequests onChange={setPending} />} />
-          <Route path="players" element={<AdminPlayers />} />
-          <Route path="locations" element={<AdminLocations />} />
-          <Route path="settings" element={<AdminSettings />} />
-        </Routes>
+        <AdminDivision.Provider value={division}>
+          <Routes>
+            <Route index element={<AdminRuns />} />
+            <Route path="runs/:id" element={<AdminRun />} />
+            <Route path="requests" element={<AdminRequests onChange={setPending} />} />
+            <Route path="players" element={<AdminPlayers />} />
+            <Route path="locations" element={<AdminLocations />} />
+            <Route path="settings" element={<AdminSettings />} />
+          </Routes>
+        </AdminDivision.Provider>
       </main>
     </div>
   )

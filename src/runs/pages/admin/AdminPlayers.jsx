@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { formatPhone } from '../../lib/pay'
 import CopyButton from '../../components/CopyButton'
+import { useAdminDivision } from '../../lib/adminDivision'
+import { DIVISION_LABELS } from '../../lib/division'
 
 const BLANK = { first_name: '', last_name: '', phone: '' }
 
@@ -13,13 +15,14 @@ export default function AdminPlayers() {
   const [adding, setAdding] = useState(false)
   const [error, setError] = useState('')
   const [inviteLabel, setInviteLabel] = useState('')
+  const division = useAdminDivision()
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [division])
 
   async function load() {
     const [{ data: p }, { data: i }] = await Promise.all([
-      supabase.from('run_players').select('*, run_signups(id)').neq('status', 'pending').order('first_name'),
-      supabase.from('run_invites').select('*').order('created_at', { ascending: false }),
+      supabase.from('run_players').select('*, run_signups(id)').eq('division', division).neq('status', 'pending').order('first_name'),
+      supabase.from('run_invites').select('*').eq('division', division).order('created_at', { ascending: false }),
     ])
     setPlayers(p ?? [])
     setInvites(i ?? [])
@@ -30,7 +33,7 @@ export default function AdminPlayers() {
     setError('')
     const phone = form.phone.replace(/\D/g, '').slice(-10)
     if (phone.length !== 10) return setError('Phone needs 10 digits')
-    const { error } = await supabase.from('run_players').insert({ ...form, phone, status: 'approved' })
+    const { error } = await supabase.from('run_players').insert({ ...form, phone, status: 'approved', division })
     if (error) return setError(error.code === '23505' ? 'That phone number is already on the list' : error.message)
     setForm(BLANK)
     setAdding(false)
@@ -49,7 +52,7 @@ export default function AdminPlayers() {
   }
 
   async function createInvite() {
-    await supabase.from('run_invites').insert({ label: inviteLabel || null })
+    await supabase.from('run_invites').insert({ label: inviteLabel || null, division })
     setInviteLabel('')
     load()
   }
@@ -73,7 +76,7 @@ export default function AdminPlayers() {
     <div className="space-y-8">
       {/* Invite links */}
       <section>
-        <h2 className="label">Invite links</h2>
+        <h2 className="label">{DIVISION_LABELS[division]} invite links</h2>
         <p className="mb-3 text-sm text-muted">Anyone who signs up through an invite link is approved right away.</p>
         <div className="mb-3 flex gap-2">
           <input className="input flex-1 py-2 text-sm" placeholder="Who's it for? (optional)" value={inviteLabel}
@@ -143,9 +146,9 @@ export default function AdminPlayers() {
               {p.status === 'denied' ? (
                 <button onClick={() => update(p, { status: 'approved' })} className="text-xs font-medium text-hoop">Approve</button>
               ) : (
-                <button onClick={() => update(p, { is_mhoop: !p.is_mhoop })}
-                  className={`rounded-full border px-2.5 py-1 text-xs font-medium ${p.is_mhoop ? 'border-hoop bg-hoop-soft text-hoop-dark' : 'border-line text-muted'}`}>
-                  {p.is_mhoop ? '⭐ Mhoop' : 'Mhoop?'}
+                <button onClick={() => update(p, { is_member: !p.is_member })}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium ${p.is_member ? 'border-hoop bg-hoop-soft text-hoop-dark' : 'border-line text-muted'}`}>
+                  {p.is_member ? '♾ Unlimited' : 'Unlimited?'}
                 </button>
               )}
               <button onClick={() => removePlayer(p)} aria-label="Delete" className="px-1 text-lg leading-none text-muted/50 hover:text-red-500">×</button>

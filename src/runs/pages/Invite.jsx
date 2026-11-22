@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { setMe } from '../lib/me'
+import { basePath } from '../lib/division'
 
 export default function Invite() {
   const { token } = useParams()
@@ -12,7 +13,7 @@ export default function Invite() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    supabase.rpc('runs_check_invite', { p_token: token }).then(({ data }) => setValid(!!data))
+    supabase.rpc('runs_check_invite', { p_token: token }).then(({ data }) => setValid(data ?? false))
   }, [token])
 
   async function submit(e) {
@@ -25,8 +26,8 @@ export default function Invite() {
     setBusy(false)
     if (error) return setError(error.message)
     if (data.status !== 'approved') return setError("Something's off with your account — text Amiel.")
-    setMe({ player_id: data.player_id, first_name: data.first_name, last_name: data.last_name, is_mhoop: data.is_mhoop })
-    navigate('/', { state: { welcome: `You're in, ${data.first_name}. Pick a run below.` } })
+    setMe(data.division, { player_id: data.player_id, first_name: data.first_name, last_name: data.last_name, is_member: data.is_member })
+    navigate(`${basePath(data.division)}/`, { state: { welcome: `You're in, ${data.first_name}. Pick a run below.` } })
   }
 
   return (
@@ -63,7 +64,7 @@ export default function Invite() {
                 value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
             </div>
             {error && <p className="text-sm text-bad">{error}</p>}
-            <button disabled={busy || valid !== true} className="btn-primary w-full py-3 text-base">
+            <button disabled={busy || !valid} className="btn-primary w-full py-3 text-base">
               {busy ? 'Joining…' : "I'm in"}
             </button>
           </form>

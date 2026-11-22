@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { loadSettings } from '../../lib/pay'
 import { fromKey, toKey } from '../../lib/dates'
+import { useAdminDivision } from '../../lib/adminDivision'
 
 const BLANK = { run_date: '', start_time: '09:00', end_time: '11:00', gym_id: '', price: '12', capacity: '', notes: '', repeat: '0', count: '6' }
 
@@ -16,13 +17,14 @@ export default function RunForm({ run, onDone }) {
     notes: run.notes ?? '',
   } : BLANK)
   const [gyms, setGyms] = useState([])
+  const division = useAdminDivision()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
     supabase.from('gyms').select('id, name').order('name').then(({ data }) => setGyms(data ?? []))
-    if (!run) loadSettings().then(s => s.default_price && setForm(f => ({ ...f, price: String(Number(s.default_price)) })))
-  }, [run])
+    if (!run) loadSettings(division).then(s => s.default_price && setForm(f => ({ ...f, price: String(Number(s.default_price)) })))
+  }, [run, division])
 
   function set(field) {
     return e => setForm(f => ({ ...f, [field]: e.target.value }))
@@ -39,6 +41,7 @@ export default function RunForm({ run, onDone }) {
       price: Number(form.price) || 0,
       capacity: form.capacity ? Number(form.capacity) : null,
       notes: form.notes || null,
+      ...(run ? {} : { division }),
     }
     // New runs can repeat weekly / every other week
     const every = Number(form.repeat)
@@ -57,7 +60,7 @@ export default function RunForm({ run, onDone }) {
 
   return (
     <form onSubmit={handleSubmit} className="card mb-4 space-y-3 p-4">
-      <h2 className="label">{run ? 'Edit run' : 'New run'}</h2>
+      <h2 className="label">{run ? 'Edit run' : `New ${division === 'youth' ? 'youth' : 'adult'} run`}</h2>
       <div>
         <label className="label" htmlFor="date">Date</label>
         <input id="date" type="date" required className="input" value={form.run_date} onChange={set('run_date')} />
