@@ -7,6 +7,7 @@ import AdminRequests from './AdminRequests'
 import AdminPlayers from './AdminPlayers'
 import AdminLocations from './AdminLocations'
 import AdminSettings from './AdminSettings'
+import { setBadge } from '../../lib/push'
 
 const tabs = [
   { to: '/admin', label: 'Runs', end: true },
@@ -26,11 +27,28 @@ export default function Admin() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // "Add to Home Screen" from admin opens straight into admin
+  useEffect(() => {
+    const link = document.createElement('link')
+    link.rel = 'manifest'
+    link.href = '/runs-admin.webmanifest'
+    document.head.appendChild(link)
+    return () => link.remove()
+  }, [])
+
+  // Pending request count: tab badge + home screen icon badge, refreshed when the app comes back up
   useEffect(() => {
     if (!user) return
-    supabase.from('run_players').select('id', { count: 'exact', head: true }).eq('status', 'pending')
+    const refresh = () => supabase.from('run_players').select('id', { count: 'exact', head: true }).eq('status', 'pending')
       .then(({ count }) => setPending(count ?? 0))
+    refresh()
+    const onVisible = () => document.visibilityState === 'visible' && refresh()
+    document.addEventListener('visibilitychange', onVisible)
+    const timer = setInterval(refresh, 60_000)
+    return () => { document.removeEventListener('visibilitychange', onVisible); clearInterval(timer) }
   }, [user])
+
+  useEffect(() => { if (user) setBadge(pending) }, [pending, user])
 
   if (user === undefined) return <div className="min-h-screen bg-court" />
   if (!user) return <Login />

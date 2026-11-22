@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { loadSettings } from '../../lib/pay'
+import PushSetup from '../../components/PushSetup'
 
 const FIELDS = [
   { section: 'Payments', hint: 'Leave one blank to hide it as an option.' },
@@ -52,26 +53,29 @@ export default function AdminSettings() {
   if (!form) return <p className="text-sm text-muted">Loading…</p>
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      {FIELDS.map(f => f.section ? (
-        <div key={f.section} className="pt-4 first:pt-0">
-          <h2 className="font-display text-xl font-extrabold uppercase">{f.section}</h2>
-          {f.hint && <p className="text-sm text-muted">{f.hint}</p>}
+    <div className="space-y-6">
+      <PushSetup />
+      <form onSubmit={handleSubmit} className="space-y-3">
+        {FIELDS.map(f => f.section ? (
+          <div key={f.section} className="pt-4 first:pt-0">
+            <h2 className="font-display text-xl font-extrabold uppercase">{f.section}</h2>
+            {f.hint && <p className="text-sm text-muted">{f.hint}</p>}
+          </div>
+        ) : (
+          <div key={f.key}>
+            <label className="label" htmlFor={f.key}>{f.label}</label>
+            <input id={f.key} className="input" type={f.type === 'tel' ? 'tel' : f.type === 'number' ? 'number' : 'text'}
+              inputMode={f.type === 'number' ? 'decimal' : undefined} placeholder={f.placeholder}
+              value={form[f.key] ?? ''} onChange={e => setForm(s => ({ ...s, [f.key]: e.target.value }))} />
+          </div>
+        ))}
+        {error && <p className="text-sm text-red-400">{error}</p>}
+        <div className="sticky bottom-4 pt-2">
+          <button disabled={saving} className="btn-primary w-full py-3 text-base shadow-lg">
+            {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save settings'}
+          </button>
         </div>
-      ) : (
-        <div key={f.key}>
-          <label className="label" htmlFor={f.key}>{f.label}</label>
-          <input id={f.key} className="input" type={f.type === 'tel' ? 'tel' : f.type === 'number' ? 'number' : 'text'}
-            inputMode={f.type === 'number' ? 'decimal' : undefined} placeholder={f.placeholder}
-            value={form[f.key] ?? ''} onChange={e => setForm(s => ({ ...s, [f.key]: e.target.value }))} />
-        </div>
-      ))}
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      <div className="sticky bottom-4 pt-2">
-        <button disabled={saving} className="btn-primary w-full py-3 text-base shadow-lg">
-          {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save settings'}
-        </button>
-      </div>
-    </form>
+      </form>
+    </div>
   )
 }

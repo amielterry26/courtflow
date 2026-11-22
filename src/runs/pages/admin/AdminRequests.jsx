@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { shortDate, todayKey } from '../../lib/dates'
 import { formatPhone, smsLink } from '../../lib/pay'
 import { runUrl } from '../../lib/notify'
+import PushSetup from '../../components/PushSetup'
 
 // The "Approve" link in the request email lands here with ?approve=<player id>
 export default function AdminRequests({ onChange }) {
@@ -52,6 +53,7 @@ export default function AdminRequests({ onChange }) {
 
   return (
     <div className="space-y-3">
+      <PushSetup compact />
       {approved.map(p => (
         <div key={p.id} className="rounded-2xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-300">
           <p className="font-semibold">✓ {p.first_name} {p.last_name} is approved</p>

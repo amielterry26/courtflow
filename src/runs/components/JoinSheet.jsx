@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { getMe, setMe, getPending, setPending, setToken, forgetMe } from '../lib/me'
 import { payMethods, useSettings } from '../lib/pay'
 import { notifyRequest } from '../lib/notify'
+import { pushRequest } from '../lib/push'
 import { shortDate, timeRange } from '../lib/dates'
 import PayInstructions from './PayInstructions'
 
@@ -78,7 +79,7 @@ export default function JoinSheet({ run, onClose, onJoined }) {
     }
     if (data.status === 'pending') {
       setPending({ player_id: data.player_id })
-      await notifyRequest(data, run, form.phone)
+      await Promise.all([notifyRequest(data, run, form.phone), pushRequest(data.player_id)])
     }
     setBusy(false)
     setStep('requested')
